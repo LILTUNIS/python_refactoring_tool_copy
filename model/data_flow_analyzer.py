@@ -1,20 +1,23 @@
+#data_flow_analyzer.py
 import ast
 from typing import Dict, List
 
-def analyze_data_flow(tree: ast.AST) -> Dict[str, Dict]:
+def analyze_data_flow(tree: ast.AST, filename: str = "unknown_file.py") -> Dict[str, Dict]:
     """
     Analyze data flow within the AST.
-    Returns a dictionary mapping function names to their data flow details.
+    Returns a dictionary mapping file names to functions and their data flow details.
     """
-    data_flow = {}
+    data_flow = {filename: {}}  # Wrap results under a filename
 
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
             print(f"DEBUG: Processing function `{node.name}` in analyze_data_flow")
 
-            # 🚀 Fix: Use function name instead of filename
-            if node.name not in data_flow:
-                data_flow[node.name] = {"variables": {}, "dependencies": {"reads": [], "writes": []}}
+            if node.name not in data_flow[filename]:
+                data_flow[filename][node.name] = {
+                    "variables": {},
+                    "dependencies": {"reads": [], "writes": []}
+                }
 
             variables = {}
             for child in ast.walk(node):
@@ -27,8 +30,8 @@ def analyze_data_flow(tree: ast.AST) -> Dict[str, Dict]:
                         variables[child.id]["used"].append(child.lineno)
 
             dependencies = extract_dependencies(node)
-            data_flow[node.name]["variables"] = variables
-            data_flow[node.name]["dependencies"] = dependencies
+            data_flow[filename][node.name]["variables"] = variables
+            data_flow[filename][node.name]["dependencies"] = dependencies
 
             print(f"DEBUG: Function `{node.name}` - Variables: {variables}")
             print(f"DEBUG: Function `{node.name}` - Dependencies: {dependencies}")

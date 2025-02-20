@@ -1,12 +1,11 @@
+#static_analyzer.py
 import ast
 import logging
-from difflib import SequenceMatcher
-from typing import List, Dict, Any
 from dataclasses import dataclass
+from typing import List, Dict
 
 # Configure logging for better traceability
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
-
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 @dataclass
 class SimilarityResult:
@@ -65,18 +64,12 @@ def calculate_complexity(node: ast.AST) -> int:
     return complexity
 
 
+import ast
+import logging
+from difflib import SequenceMatcher
+from typing import Any, Dict
+
 def normalize_ast_structure(node: ast.AST) -> str:
-    """
-    Create a normalized string representation of the AST structure.
-
-    This function uses a simple cache (by node id) to avoid redundant computations.
-
-    Args:
-        node: The AST node to normalize.
-
-    Returns:
-        A string representing the normalized AST structure.
-    """
     cache: Dict[int, Any] = {}
 
     def _normalize(n: ast.AST) -> Any:
@@ -110,11 +103,10 @@ def normalize_ast_structure(node: ast.AST) -> str:
                 }
             }
         elif isinstance(n, ast.Constant):
-            result = {"Constant": None}
+            result = {"Constant": n.value}
         elif isinstance(n, ast.Name):
             result = {"Name": n.id}
         else:
-            # Fallback: use the node type name
             result = str(type(n).__name__)
         cache[node_id] = result
         return result
@@ -122,24 +114,12 @@ def normalize_ast_structure(node: ast.AST) -> str:
     normalized = _normalize(node)
     return str(normalized)
 
-
 def calculate_similarity(node1: ast.AST, node2: ast.AST) -> float:
-    """
-    Calculate a similarity score between two AST nodes based on their normalized structures.
-
-    Uses Python's SequenceMatcher to compute a ratio.
-
-    Args:
-        node1: First AST node.
-        node2: Second AST node.
-
-    Returns:
-        A float between 0 and 1 indicating similarity.
-    """
     try:
         normalized1 = normalize_ast_structure(node1)
         normalized2 = normalize_ast_structure(node2)
         similarity_ratio = SequenceMatcher(None, normalized1, normalized2).ratio()
+        logging.debug(f"AST Similarity between `{node1}` and `{node2}`: {similarity_ratio}")
         return similarity_ratio
     except Exception as e:
         logging.error(f"Error in calculate_similarity: {e}")

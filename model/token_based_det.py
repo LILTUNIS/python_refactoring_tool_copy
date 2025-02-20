@@ -1,3 +1,4 @@
+#token_based_det.py
 import tokenize
 import io
 import ast
@@ -67,8 +68,14 @@ class TokenBasedCloneDetector:
                 tokens1, tokens2 = function_tokens[func1], function_tokens[func2]
 
                 token_similarity = TokenBasedCloneDetector.compute_token_similarity(tokens1, tokens2)
-                ast_similarity = calculate_similarity(ast.parse(functions[func1]), ast.parse(
-                    functions[func2]))  # Use static analyzer's AST similarity
+
+                # Updated: Extract the FunctionDef node from the parsed code before calculating AST similarity
+                try:
+                    func1_ast = ast.parse(functions[func1]).body[0]
+                    func2_ast = ast.parse(functions[func2]).body[0]
+                    ast_similarity = calculate_similarity(func1_ast, func2_ast)  # Use static analyzer's AST similarity
+                except Exception as e:
+                    ast_similarity = 0.0
 
                 if token_similarity >= similarity_threshold or ast_similarity >= similarity_threshold:
                     clones.append({

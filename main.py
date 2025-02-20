@@ -1,4 +1,4 @@
-from view.application_view  import ApplicationView
+from view.mainView  import ApplicationView
 from controller.code_analysis_controller  import CodeAnalysisController
 
 def main():

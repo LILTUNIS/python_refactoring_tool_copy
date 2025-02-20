@@ -4,159 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/088db797a5a53b86/39e76805ddc331a0" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/088db797a5a53b86/4e0278fb29273fd6" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/088db797a5a53b86/e988d557dbad0fdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/6bb2ba05bbea1352" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/7503e07a1de3cef3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/90462908d8ac3801" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/a1364abaf7d0fdc8" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/bd98caf110a7e4ab" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/c67efc9ad610dda7" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/d1fd1214abf855b2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/dacff982728f2bf2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2e134331d8d9ff49/e2bd22a3c88430dc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/2f90803b723e629a/3e40e0baa7431895" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/465b07f6a3b0237b/56fa3dcaec5c26eb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/587493eaaf332a77/b39cb8cc4b6a5b4f" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/6521a2d35f25c705/b39cb8cc4b6a5b4f" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/6521a2d35f25c705/cdaa9c16c7ba02c1" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/examples/8bdf588916654bab/3e40e0baa7431895" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp0ir0f_zg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp0qmy0b3i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp0z2u1x7m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp197992b5" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp1g32hepx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp1kti07mu" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp2g8633cv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp2u9h45d9" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp3962esfz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp3h008yyx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp3nq865_5" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp3v9b96y4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp3ze0qjsz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp48v6_ig7" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp4nxfrr6c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp4rzijn6z" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp4u6yf11e" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp5pcmx7u8" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp6hx97azc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp6rxgpjax" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp7fd6mo83" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp7tpv9df1" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp8eq4xfea" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp8orrv3pl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp8vsa4bzn" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp8vwaah6j" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp_6b444t8" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp_dqznu_j" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmp_rkt2gxl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpab0s7s11" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpay8wjnkh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpb_tqgeun" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpbcltal_b" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpbx_zcmva" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpc59po250" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpc6wkcwf9" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpc72ilrof" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpcju8j1hq" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpd0sqkynj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpd78mndx9" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpdaxwhknn" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpe012tc93" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpeecb8761" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpeiu_t77x" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpettxhcbp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpeufxl3em" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpf6jxa42x" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpf7vlksr_" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpfi9f_o85" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpfkp4pcw_" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpflst2xi3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpgbyg2irj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpgejmnp9m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpgrh_621q" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpgw4mkclv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmph4kie0r2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmphc2ncxrv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmphn5qbv86" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmphusp8ply" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpi09lllxh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpim1bm6u3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpiry9nb28" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpitd_bf2s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpj5sh6l3w" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpk7ddyu54" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpk84sugmb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpkd0r6_lc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpkhgtxaaz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpkm04vz8h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpkq9140nc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpkvu1ie5c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpkxsral7h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmplb7i_3ra" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmplk8bl56d" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmplmlso6ru" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpluolhy_o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpm30xcllv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpmcua17pb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpmhueu2qk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpmj08x_y8" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpnkpbelq4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpotmytrtf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpowwsp82l" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpp27phv4r" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpp7_90413" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmppzhzi86m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpq0190oq8" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpqd78lpue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpqw374s2o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpr2amzzkj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpr41qfxia" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmprbnmyhzd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmprczdk601" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpre1uqsne" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmprmll8yyu" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmps39dbp1w" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpsck1j4x1" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpscoj9k0i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpskclmvyc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpu5z8imts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpud_eeq3h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpv7v959uh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpv8wtb19k" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpvcd5co5w" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpvtrhjk0k" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpw1n85l87" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpwd9a8w_f" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpwdmu1uqh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpwwfvgrot" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpx1d0bq1l" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpx4_1dg32" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpxafhes79" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpze8zo70_" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/tmp/tmpzrpha4yq" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/unicode_data/15.1.0/charmap.json.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.hypothesis/unicode_data/15.1.0/codec-utf-8.json.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/python_refactoring_tool.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/file/file.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/token_based_det.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/tests/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/tests/sample_code/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/tests/sample_code/example1.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/application_view.py" afterDir="false" />
+    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new">
+      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/mainView.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/file.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/token_based_det.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/token_based_det.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/application_view.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,18 +33,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../python_refactoring_tool" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "LILTUNIS"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;LILTUNIS&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/LILTUNIS/python_refactoring_tool..git",
-    "accountId": "9c341daa-7bf4-419b-9d72-efdabd01c73e"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/LILTUNIS/python_refactoring_tool..git&quot;,
+    &quot;accountId&quot;: &quot;9c341daa-7bf4-419b-9d72-efdabd01c73e&quot;
   }
-}]]></component>
+}</component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -192,34 +52,39 @@
   &quot;associatedIndex&quot;: 6
 }</component>
   <component name="ProjectId" id="2rkF3nEUVAys0fOlfm8k25emdD8" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.application_view.executor": "Run",
-    "Python.ast_parser.executor": "Run",
-    "Python.code_analysis_controller.executor": "Run",
-    "Python.code_similarity_view.executor": "Run",
-    "Python.data_flow_analyzer.executor": "Run",
-    "Python.example1.executor": "Run",
-    "Python.file.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.main_controller.executor": "Run",
-    "Python.runtime_checker.executor": "Run",
-    "Python.similarity_checker.executor": "Run",
-    "Python.static_analyzer.executor": "Run",
-    "Python.token_based_det.executor": "Run",
-    "Python.visualization.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.application_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ast_parser.executor&quot;: &quot;Run&quot;,
+    &quot;Python.code_analysis_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.code_similarity_view.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data_flow_analyzer.executor&quot;: &quot;Run&quot;,
+    &quot;Python.example1.executor&quot;: &quot;Run&quot;,
+    &quot;Python.file.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.runtime_checker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.similarity_checker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.static_analyzer.executor&quot;: &quot;Run&quot;,
+    &quot;Python.token_based_det.executor&quot;: &quot;Run&quot;,
+    &quot;Python.visualization.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\view" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services" />
       <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool" />
       <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\tests" />
     </key>
@@ -256,7 +121,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-495700d161d3-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.22562.220" />
+        <option value="bundled-python-sdk-fc1d50d2d915-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.24978.54" />
       </set>
     </attachedChunks>
   </component>
@@ -269,6 +134,30 @@
       <option name="presentableId" value="Default" />
       <updated>1737094968363</updated>
     </task>
+    <task id="LOCAL-00001" summary="new">
+      <option name="closed" value="true" />
+      <created>1739894708230</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1739894708230</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="new" />
+    <option name="LAST_COMMIT_MESSAGE" value="new" />
   </component>
 </project>
