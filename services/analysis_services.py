@@ -9,7 +9,91 @@ from model.static_analyzer import SimilarityResult, parse_files, find_similar_no
 from model.data_flow_analyzer import analyze_data_flow
 from model.token_based_det import TokenBasedCloneDetector
 
+class DashboardMetricsService:
+    @staticmethod
+    def compute_key_metrics(
+        static_nodes: List[Dict[str, Any]],
+        token_clones: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        Compute overall Key Metrics:
+          - total_functions
+          - total_static_pairs
+          - avg_complexity
+          - avg_loc
+          - overall_similarity
+          - total_duplicate_pairs
+          ... etc.
+        """
 
+        # 1) Collect all unique functions from static_nodes
+        #    (We see function1_metrics, function2_metrics for each "similar" pair)
+        unique_function_names = set()
+        complexities = []
+        locs = []
+        for pair in static_nodes:
+            f1 = pair.get("function1_metrics", {})
+            f2 = pair.get("function2_metrics", {})
+
+            # Add function names
+            if f1.get("name"):
+                unique_function_names.add(f1["name"])
+                complexities.append(f1.get("complexity", 0))
+                locs.append(f1.get("loc", 0))
+
+            if f2.get("name"):
+                unique_function_names.add(f2["name"])
+                complexities.append(f2.get("complexity", 0))
+                locs.append(f2.get("loc", 0))
+
+        # total_functions = how many distinct function names we found
+        total_functions = len(unique_function_names)
+
+        # total_static_pairs = just the length of static_nodes
+        total_static_pairs = len(static_nodes)
+
+        # avg_complexity
+        avg_complexity = (sum(complexities) / len(complexities)) if complexities else 0.0
+
+        # avg_loc
+        avg_loc = (sum(locs) / len(locs)) if locs else 0.0
+
+        # 2) Overall similarity
+        #    We'll combine "token_clones" + "static_nodes" to compute an average
+        #    or you might only want the "static_nodes" similarity, etc.
+        #    For example, let's do an average of all similarities in static_nodes:
+        similarities = [pair.get("similarity", 0.0) for pair in static_nodes]
+        avg_ast_similarity = (sum(similarities) / len(similarities)) if similarities else 0.0
+
+        #    Then also gather from token_clones (token_similarity + ast_similarity).
+        #    If you want a single "overall" for token-based pairs, do (token + ast)/2, then average.
+        token_asts = []
+        for clone in token_clones:
+            token_sim = clone.get("token_similarity", 0.0)
+            ast_sim = clone.get("ast_similarity", 0.0)
+            combined = (token_sim + ast_sim) / 2.0
+            token_asts.append(combined)
+
+        avg_token_ast = (sum(token_asts) / len(token_asts)) if token_asts else 0.0
+
+        # Finally, let's define "overall_similarity" = average of these two means
+        # (One approach: average the avg_ast_similarity with avg_token_ast)
+        overall_similarity = (avg_ast_similarity + avg_token_ast) / 2.0 if (avg_ast_similarity or avg_token_ast) else 0.0
+
+        # 3) total_duplicate_pairs
+        #    For example, we might consider any pair with similarity > 0.8 as "duplicate."
+        #    Or just count how many pairs are in static_nodes + token_clones.
+        #    Let's do a simple approach: # of static_nodes + # of token_clones
+        total_duplicate_pairs = len(static_nodes) + len(token_clones)
+
+        return {
+            "total_functions": total_functions,
+            "total_static_pairs": total_static_pairs,
+            "avg_complexity": avg_complexity,
+            "avg_loc": avg_loc,
+            "overall_similarity": overall_similarity,
+            "total_duplicate_pairs": total_duplicate_pairs,
+        }
 class DynamicImportService:
     @staticmethod
     def dynamic_import(file_path: str) -> Optional[Any]:

@@ -4,19 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new">
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/mainView.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" afterDir="false" />
+    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-02-20">
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/New folder/application_view.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/New folder/code_analysis_controller.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/New folder/data_flow_analyzer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/New folder/runtime_checker.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/New folder/static_analyzer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/New folder/token_based_det.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/file.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/file.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/token_based_det.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/token_based_det.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/application_view.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/mainView.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/mainView.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,24 +71,28 @@
     &quot;Python.example1.executor&quot;: &quot;Run&quot;,
     &quot;Python.file.executor&quot;: &quot;Run&quot;,
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mainView.executor&quot;: &quot;Run&quot;,
     &quot;Python.main_controller.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main_view.executor&quot;: &quot;Run&quot;,
     &quot;Python.runtime_checker.executor&quot;: &quot;Run&quot;,
     &quot;Python.similarity_checker.executor&quot;: &quot;Run&quot;,
     &quot;Python.static_analyzer.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tabs.executor&quot;: &quot;Run&quot;,
     &quot;Python.token_based_det.executor&quot;: &quot;Run&quot;,
     &quot;Python.visualization.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\view" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\tests" />
       <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services" />
       <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\tests" />
     </key>
   </component>
   <component name="RunManager">
@@ -142,12 +148,38 @@
       <option name="project" value="LOCAL" />
       <updated>1739894708230</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="new">
+      <option name="closed" value="true" />
+      <created>1740045692248</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1740045692248</updated>
+    </task>
+    <task id="LOCAL-00003" summary="new 2025-02-20">
+      <option name="closed" value="true" />
+      <created>1740045707161</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1740045707161</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="65930bd1-1352-4106-bece-389478462c1c" value="TOOL_WINDOW" />
+      </map>
+    </option>
     <option name="TAB_STATES">
       <map>
+        <entry key="65930bd1-1352-4106-bece-389478462c1c">
+          <value>
+            <State />
+          </value>
+        </entry>
         <entry key="MAIN">
           <value>
             <State />
@@ -158,6 +190,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="new" />
-    <option name="LAST_COMMIT_MESSAGE" value="new" />
+    <MESSAGE value="new 2025-02-20" />
+    <option name="LAST_COMMIT_MESSAGE" value="new 2025-02-20" />
   </component>
 </project>

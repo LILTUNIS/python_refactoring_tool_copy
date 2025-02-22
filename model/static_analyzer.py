@@ -2,10 +2,12 @@
 import ast
 import logging
 from dataclasses import dataclass
-from typing import List, Dict
+from difflib import SequenceMatcher
+from typing import List, Dict, Any
 
 # Configure logging for better traceability
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+
 
 @dataclass
 class SimilarityResult:
@@ -22,16 +24,8 @@ class SimilarityResult:
 
 
 def parse_files(files: List[str]) -> Dict[str, ast.AST]:
-    """
-    Parse multiple Python files into ASTs.
-
-    Args:
-        files: List of file paths.
-
-    Returns:
-        A dictionary mapping each file path to its AST.
-    """
-    ast_trees: Dict[str, ast.AST] = {}
+    """Parse multiple Python files into ASTs."""
+    ast_trees = {}
     for file_path in files:
         try:
             with open(file_path, 'r', encoding="utf-8") as file:
@@ -43,84 +37,87 @@ def parse_files(files: List[str]) -> Dict[str, ast.AST]:
 
 
 def calculate_complexity(node: ast.AST) -> int:
-    """
-    Calculate cyclomatic complexity for an AST node.
-
-    Complexity is computed by counting branching constructs.
-
-    Args:
-        node: An AST node.
-
-    Returns:
-        The cyclomatic complexity as an integer.
-    """
+    """Calculate cyclomatic complexity for an AST node."""
     complexity = 1
     for child in ast.walk(node):
         if isinstance(child, (ast.If, ast.While, ast.For, ast.ExceptHandler)):
             complexity += 1
         elif isinstance(child, ast.BoolOp):
-            # Each extra Boolean operand beyond the first adds to the branching
             complexity += max(0, len(child.values) - 1)
     return complexity
 
 
-import ast
-import logging
-from difflib import SequenceMatcher
-from typing import Any, Dict
+def _normalize(n: ast.AST, cache: Dict[int, Any]) -> Any:
+    """Helper function to normalize AST structures."""
+    node_id = id(n)
+    if node_id in cache:
+        return cache[node_id]
+
+    if isinstance(n, ast.FunctionDef):
+        result = {
+            "FunctionDef": {
+                "name": n.name,
+                "args": [arg.arg for arg in n.args.args],
+                "body": [_normalize(stmt, cache) for stmt in n.body]
+            }
+        }
+    elif isinstance(n, ast.If):
+        result = {
+            "If": {
+                "test": _normalize(n.test, cache),
+                "body": [_normalize(stmt, cache) for stmt in n.body],
+                "orelse": [_normalize(stmt, cache) for stmt in n.orelse]
+            }
+        }
+    elif isinstance(n, ast.For):
+        result = {
+            "For": {
+                "target": _normalize(n.target, cache),
+                "iter": _normalize(n.iter, cache),
+                "body": [_normalize(stmt, cache) for stmt in n.body],
+                "orelse": [_normalize(stmt, cache) for stmt in n.orelse]
+            }
+        }
+    elif isinstance(n, ast.While):
+        result = {
+            "While": {
+                "test": _normalize(n.test, cache),
+                "body": [_normalize(stmt, cache) for stmt in n.body],
+                "orelse": [_normalize(stmt, cache) for stmt in n.orelse]
+            }
+        }
+    elif isinstance(n, ast.Return):
+        result = {"Return": _normalize(n.value, cache) if n.value else None}
+    elif isinstance(n, ast.BinOp):
+        result = {
+            "BinOp": {
+                "op": type(n.op).__name__,
+                "left": _normalize(n.left, cache),
+                "right": _normalize(n.right, cache)
+            }
+        }
+    elif isinstance(n, ast.Constant):
+        result = {"Constant": n.value}
+    elif isinstance(n, ast.Name):
+        result = {"Name": n.id}
+    else:
+        result = str(type(n).__name__)
+
+    cache[node_id] = result
+    return result
+
 
 def normalize_ast_structure(node: ast.AST) -> str:
-    cache: Dict[int, Any] = {}
+    """Normalize AST structure to a consistent format."""
+    return str(_normalize(node, {}))
 
-    def _normalize(n: ast.AST) -> Any:
-        node_id = id(n)
-        if node_id in cache:
-            return cache[node_id]
-        if isinstance(n, ast.FunctionDef):
-            result = {
-                "FunctionDef": {
-                    "name": n.name,
-                    "args": [arg.arg for arg in n.args.args],
-                    "body": [_normalize(stmt) for stmt in n.body]
-                }
-            }
-        elif isinstance(n, ast.If):
-            result = {
-                "If": {
-                    "test": _normalize(n.test),
-                    "body": [_normalize(stmt) for stmt in n.body],
-                    "orelse": [_normalize(stmt) for stmt in n.orelse]
-                }
-            }
-        elif isinstance(n, ast.Return):
-            result = {"Return": _normalize(n.value) if n.value is not None else None}
-        elif isinstance(n, ast.BinOp):
-            result = {
-                "BinOp": {
-                    "op": type(n.op).__name__,
-                    "left": _normalize(n.left),
-                    "right": _normalize(n.right)
-                }
-            }
-        elif isinstance(n, ast.Constant):
-            result = {"Constant": n.value}
-        elif isinstance(n, ast.Name):
-            result = {"Name": n.id}
-        else:
-            result = str(type(n).__name__)
-        cache[node_id] = result
-        return result
-
-    normalized = _normalize(node)
-    return str(normalized)
 
 def calculate_similarity(node1: ast.AST, node2: ast.AST) -> float:
+    """Calculate similarity between two AST nodes."""
     try:
         normalized1 = normalize_ast_structure(node1)
         normalized2 = normalize_ast_structure(node2)
-        similarity_ratio = SequenceMatcher(None, normalized1, normalized2).ratio()
-        logging.debug(f"AST Similarity between `{node1}` and `{node2}`: {similarity_ratio}")
-        return similarity_ratio
+        return SequenceMatcher(None, normalized1, normalized2).ratio()
     except Exception as e:
         logging.error(f"Error in calculate_similarity: {e}")
         return 0.0
