@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication
-from view.mainView import ApplicationView
+from view.main_view import ApplicationView
 from controller.code_analysis_controller import CodeAnalysisController
 
 def main():

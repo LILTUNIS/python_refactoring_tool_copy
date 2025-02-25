@@ -9,91 +9,120 @@ from model.static_analyzer import SimilarityResult, parse_files, find_similar_no
 from model.data_flow_analyzer import analyze_data_flow
 from model.token_based_det import TokenBasedCloneDetector
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 class DashboardMetricsService:
     @staticmethod
     def compute_key_metrics(
-        static_nodes: List[Dict[str, Any]],
-        token_clones: List[Dict[str, Any]]
+            static_nodes: List[Dict[str, Any]],
+            token_clones: List[Dict[str, Any]],
+            runtime_data: Dict[str, Any]  # New parameter for runtime metrics
     ) -> Dict[str, Any]:
-        """
-        Compute overall Key Metrics:
-          - total_functions
-          - total_static_pairs
-          - avg_complexity
-          - avg_loc
-          - overall_similarity
-          - total_duplicate_pairs
-          ... etc.
-        """
-
-        # 1) Collect all unique functions from static_nodes
-        #    (We see function1_metrics, function2_metrics for each "similar" pair)
         unique_function_names = set()
         complexities = []
         locs = []
+
+        # Collect function metrics from static nodes
         for pair in static_nodes:
-            f1 = pair.get("function1_metrics", {})
-            f2 = pair.get("function2_metrics", {})
+            for fn_key in ["function1_metrics", "function2_metrics"]:
+                if fn := pair.get(fn_key, {}):
+                    if name := fn.get("name", "").strip():  # Normalize names
+                        unique_function_names.add(name)
+                        complexities.append(fn.get("complexity", 0))
+                        locs.append(fn.get("loc", 0))
 
-            # Add function names
-            if f1.get("name"):
-                unique_function_names.add(f1["name"])
-                complexities.append(f1.get("complexity", 0))
-                locs.append(f1.get("loc", 0))
-
-            if f2.get("name"):
-                unique_function_names.add(f2["name"])
-                complexities.append(f2.get("complexity", 0))
-                locs.append(f2.get("loc", 0))
-
-        # total_functions = how many distinct function names we found
+        # Calculate basic metrics
         total_functions = len(unique_function_names)
+        avg_complexity = sum(complexities) / len(complexities) if complexities else 0.0
+        avg_loc = sum(locs) / len(locs) if locs else 0.0
 
-        # total_static_pairs = just the length of static_nodes
-        total_static_pairs = len(static_nodes)
+        pair_map = {}
 
-        # avg_complexity
-        avg_complexity = (sum(complexities) / len(complexities)) if complexities else 0.0
+        # Process AST similarities
+        for pair in static_nodes:
+            f1_name = pair.get("function1_metrics", {}).get("name", "").strip()
+            f2_name = pair.get("function2_metrics", {}).get("name", "").strip()
+            if f1_name and f2_name and f1_name != f2_name:
+                key = tuple(sorted([f1_name, f2_name]))
+                pair_map[key] = {
+                    "ast_sim": pair.get("similarity", 0.0),
+                    "token_sim": None
+                }
 
-        # avg_loc
-        avg_loc = (sum(locs) / len(locs)) if locs else 0.0
-
-        # 2) Overall similarity
-        #    We'll combine "token_clones" + "static_nodes" to compute an average
-        #    or you might only want the "static_nodes" similarity, etc.
-        #    For example, let's do an average of all similarities in static_nodes:
-        similarities = [pair.get("similarity", 0.0) for pair in static_nodes]
-        avg_ast_similarity = (sum(similarities) / len(similarities)) if similarities else 0.0
-
-        #    Then also gather from token_clones (token_similarity + ast_similarity).
-        #    If you want a single "overall" for token-based pairs, do (token + ast)/2, then average.
-        token_asts = []
+        # Process Token similarities
         for clone in token_clones:
-            token_sim = clone.get("token_similarity", 0.0)
-            ast_sim = clone.get("ast_similarity", 0.0)
-            combined = (token_sim + ast_sim) / 2.0
-            token_asts.append(combined)
+            f1_name = clone.get("function1_metrics", {}).get("name", "").strip()
+            f2_name = clone.get("function2_metrics", {}).get("name", "").strip()
+            if f1_name and f2_name and f1_name != f2_name:
+                key = tuple(sorted([f1_name, f2_name]))
+                token_sim = clone.get("token_similarity", 0.0)
 
-        avg_token_ast = (sum(token_asts) / len(token_asts)) if token_asts else 0.0
+                if key in pair_map:
+                    # Merge token sim into existing AST entry
+                    pair_map[key]["token_sim"] = max(
+                        pair_map[key]["token_sim"] or 0,
+                        token_sim
+                    )
+                else:
+                    # Create new entry for token-based pair
+                    pair_map[key] = {
+                        "ast_sim": None,
+                        "token_sim": token_sim
+                    }
 
-        # Finally, let's define "overall_similarity" = average of these two means
-        # (One approach: average the avg_ast_similarity with avg_token_ast)
-        overall_similarity = (avg_ast_similarity + avg_token_ast) / 2.0 if (avg_ast_similarity or avg_token_ast) else 0.0
+        # Calculate merged similarities
+        all_similarities = []
+        duplicate_pairs = 0
 
-        # 3) total_duplicate_pairs
-        #    For example, we might consider any pair with similarity > 0.8 as "duplicate."
-        #    Or just count how many pairs are in static_nodes + token_clones.
-        #    Let's do a simple approach: # of static_nodes + # of token_clones
-        total_duplicate_pairs = len(static_nodes) + len(token_clones)
+        for key, sims in pair_map.items():
+            ast_val = sims["ast_sim"]
+            token_val = sims["token_sim"]
+
+            if ast_val is not None or token_val is not None:
+                duplicate_pairs += 1
+
+            if ast_val is not None and token_val is not None:
+                all_similarities.append((ast_val + token_val) / 2)
+            elif ast_val is not None:
+                all_similarities.append(ast_val)
+            else:
+                all_similarities.append(token_val)
+
+        overall_similarity = sum(all_similarities) / len(all_similarities) if all_similarities else 0.0
+
+        # === Calculate Memory Metrics ===
+        total_avg_memory = 0.0
+        peak_memory = 0.0
+
+        # Sum up all avg memory values of all functions
+        for func in runtime_data.get("functions", []):
+            for test_data in func.get("test_results", {}).values():
+                total_avg_memory += test_data.get("total_memory_kb", 0.0)
+                peak_memory += test_data.get("peak_memory_kb", 0.0)
+
+        # Debug prints (or replace with `print` if you prefer)
+        print(f"[DEBUG] Total Avg Memory Dashboard: {total_avg_memory:.2f} KB")
+        print(f"[DEBUG] Peak Memory Dashboard: {peak_memory:.2f} KB")
+
+        # === Calculate Runtime Time Metrics (without 'most peak time') ===
+        total_avg_time = sum(func.get("avg_time", 0.0) for func in runtime_data.get("functions", []))
+        print(f"[DEBUG] Total Avg Time Dashboard: {total_avg_time:.6f} s")
 
         return {
             "total_functions": total_functions,
-            "total_static_pairs": total_static_pairs,
-            "avg_complexity": avg_complexity,
-            "avg_loc": avg_loc,
-            "overall_similarity": overall_similarity,
-            "total_duplicate_pairs": total_duplicate_pairs,
+            "avg_complexity": round(avg_complexity, 2),
+            "avg_loc": round(avg_loc, 2),
+            "overall_similarity": round(overall_similarity, 2),
+            "total_duplicate_pairs": duplicate_pairs,
+            "total_avg_memory": round(total_avg_memory, 2),
+            "peak_memory": round(peak_memory, 2),
+            "total_avg_time": round(total_avg_time, 6),
         }
+
+
+
+
 class DynamicImportService:
     @staticmethod
     def dynamic_import(file_path: str) -> Optional[Any]:
@@ -173,16 +202,37 @@ class DataFlowAnalysisService:
     def analyze_all_data_flow(ast_trees: Dict[str, Any]) -> Dict[str, Any]:
         """
         Perform data flow analysis on all provided ASTs.
+
+        Args:
+            ast_trees (Dict[str, Any]): A dictionary mapping file paths to their corresponding ASTs.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing data flow analysis results for each function.
+                            Keys are formatted as "<file_path>::<function_name>".
         """
         all_data_flow_results = {}
-        for file_path, tree in ast_trees.items():
-            logging.debug(f"Analyzing data flow for {file_path}")
-            data_flow_results = analyze_data_flow(tree)
-            for func_name, func_data in data_flow_results.items():
-                key = f"{file_path}::{func_name}"
-                all_data_flow_results[key] = func_data
 
-        logging.debug("Data flow analysis complete.")
+        for file_path, tree in ast_trees.items():
+            logging.info(f"[INFO] Starting data flow analysis for: {file_path}")
+
+            try:
+                # Perform data flow analysis on the AST
+                data_flow_results = analyze_data_flow(tree)
+
+                # Log a summary of the analysis
+                logging.debug(
+                    f"[DEBUG] Analysis complete for {file_path}. Functions analyzed: {list(data_flow_results.keys())}")
+
+                # Store results with formatted keys
+                for func_name, func_data in data_flow_results.items():
+                    key = f"{file_path}::{func_name}"
+                    all_data_flow_results[key] = func_data
+
+            except Exception as e:
+                logging.error(f"[ERROR] Data flow analysis failed for {file_path}: {str(e)}", exc_info=True)
+                continue  # Continue with other files even if one fails
+
+        logging.info("[INFO] Data flow analysis completed for all files.")
         return all_data_flow_results
 
 
@@ -194,35 +244,48 @@ class RuntimeAnalysisService:
         """
         Apply runtime checks using the `RuntimeAnalyzer`.
         """
+        print("[DEBUG] Applying runtime checks...")
+        print(f"[DEBUG] Similar Results: {similar_results}")
+        print(f"[DEBUG] Global Namespace: {list(global_namespace.keys())}")
+        print(f"[DEBUG] Number of Tests: {num_tests}")
+
         self.runtime_analyzer.apply_runtime_checks(similar_results, global_namespace, num_tests)
+        print("[DEBUG] Runtime checks applied.")
 
     def get_runtime_data(self) -> Dict[str, Any]:
         """
         Convert the raw runtime metrics into a dictionary for reporting.
         """
+        print("[DEBUG] Getting runtime data...")
         runtime_data = self.runtime_analyzer.get_metrics()
+        print(f"[DEBUG] Raw Runtime Data: {runtime_data}")
+
         functions = []
-        total_memory_usage = 0.0
-        peak_memory_usage = 0.0
+        peak_memory = 0.0
 
+        # Iterate over each function's metrics
         for func_name, metrics in runtime_data.items():
-            memory_usage = metrics.memory_usage
-            total_memory_usage += memory_usage
-            peak_memory_usage = max(peak_memory_usage, memory_usage)
+            print(f"[DEBUG] Processing metrics for function: {func_name}")
 
+            # Extract peak memory usage from test_results
+            test_results = metrics.test_results
+            for num_tests, result in test_results.items():
+                peak_memory = max(peak_memory, result.get("peak_memory_kb", 0.0))
+
+            # Append function-level details
             functions.append({
                 "func_name": func_name,
                 "call_count": metrics.call_count,
                 "execution_time": metrics.execution_time,
                 "avg_time": metrics.avg_time,
-                "memory_usage": memory_usage,
                 "test_results": metrics.test_results,
                 "input_patterns": list(metrics.input_patterns.keys()),
                 "output_patterns": list(metrics.output_patterns.keys()),
             })
 
+        print(f"[DEBUG] Peak Memory Calculated: {peak_memory:.2f} KB")
+        print(f"[DEBUG] Final Functions List: {functions}")
         return {
             "functions": functions,
-            "total_memory_usage": total_memory_usage,
-            "peak_memory": peak_memory_usage,
+            "peak_memory": peak_memory,
         }

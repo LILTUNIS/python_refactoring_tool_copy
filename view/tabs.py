@@ -1,8 +1,10 @@
+import logging
+
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton,
     QTextEdit, QGroupBox, QTreeWidget, QTreeWidgetItem
 )
-from PyQt5.QtCore import Qt
+
 from PyQt5.QtGui import QTextCursor
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -42,16 +44,19 @@ class SummaryTab(QWidget):
         metrics_layout = QGridLayout(metrics_group)
         metrics = [
             "Total Functions",
-            "Total Static Pairs",
+            "Total Avg Memory",
+            "Peak Memory",
             "Avg Complexity",
             "Avg LOC",
             "Overall Similarity",
             "Total Duplicate Pairs"
         ]
+
         for i, key in enumerate(metrics):
             label = QLabel(f"{key}: N/A")
             metrics_layout.addWidget(label, i // 2, i % 2)
             self.summary_labels[key] = label
+
         main_layout.addWidget(metrics_group)
 
         # Complexity Distribution Chart Group
@@ -145,8 +150,6 @@ class SummaryTab(QWidget):
     def update_key_metrics(self, metrics: dict):
         total_funcs = metrics.get("total_functions", 0)
         self.summary_labels["Total Functions"].setText(f"Total Functions: {total_funcs}")
-        total_pairs = metrics.get("total_static_pairs", 0)
-        self.summary_labels["Total Static Pairs"].setText(f"Total Static Pairs: {total_pairs}")
         avg_complex = metrics.get("avg_complexity", 0.0)
         self.summary_labels["Avg Complexity"].setText(f"Avg Complexity: {avg_complex:.2f}")
         avg_loc = metrics.get("avg_loc", 0.0)
@@ -155,6 +158,12 @@ class SummaryTab(QWidget):
         self.summary_labels["Overall Similarity"].setText(f"Overall Similarity: {overall_sim:.2f}")
         total_dup = metrics.get("total_duplicate_pairs", 0)
         self.summary_labels["Total Duplicate Pairs"].setText(f"Total Duplicate Pairs: {total_dup}")
+        # Display Total Avg Memory and Peak Memory
+        total_avg_mem = metrics.get("total_avg_memory", 0.0)
+        peak_mem = metrics.get("peak_memory", 0.0)
+        logging.debug(f"[DEBUG] Displaying Total Avg Memory: {total_avg_mem} KB, Peak Memory: {peak_mem} KB")
+        self.summary_labels["Total Avg Memory"].setText(f"Total Avg Memory: {total_avg_mem:.2f} KB")
+        self.summary_labels["Peak Memory"].setText(f"Peak Memory: {peak_mem:.2f} KB")
 
     def plot_complexity_chart(self, complexities):
         # Clear any existing widgets in the chart layout.
@@ -265,18 +274,42 @@ class RuntimeTab(QWidget):
         layout.addWidget(self.runtime_tree)
 
     def update_runtime(self, runtime):
+        print("[DEBUG] update_runtime() called.")
+        print(f"[DEBUG] Runtime Data Received: {runtime}")
+
+        # Clear existing data
         self.runtime_tree.clear()
+
+        # Get the functions list from the runtime data
         funcs = runtime.get("functions", [])
+        print(f"[DEBUG] Functions Extracted: {funcs}")
+
+        # Iterate over each function's metrics
         for f in funcs:
             func_name = f.get("func_name", "Unknown Function")
-            for iters, data in f.get("test_results", {}).items():
+            print(f"[DEBUG] Processing Function: {func_name}")
+
+            test_results = f.get("test_results", {})
+            print(f"[DEBUG] Test Results: {test_results}")
+
+            # Iterate over each test result for the function
+            for iters, data in test_results.items():
+                print(f"[DEBUG] Iteration: {iters}, Data: {data}")
+
+                # Extract runtime metrics
                 avg_cpu = float(data.get("avg_cpu_time", 0.0))
                 total_wall = float(data.get("total_wall_time", 0.0))
                 cpu_usage = float(data.get("cpu_usage_percent", 0.0))
-                avg_mem = float(data.get("avg_mem_kb", 0.0))
-                peak_mem = float(data.get("peak_mem_kb", 0.0))
+                avg_mem = float(data.get("total_memory_kb", 0.0))
+                peak_mem = float(data.get("peak_memory_kb", 0.0))
                 avg_wall_call = float(data.get("avg_wall_per_call", 0.0))
                 stdev_wall_call = float(data.get("stdev_wall_per_call", 0.0))
+
+                print(f"[DEBUG] Creating QTreeWidgetItem for: {func_name}")
+                print(
+                    f"  [DEBUG] avg_cpu={avg_cpu}, total_wall={total_wall}, cpu_usage={cpu_usage}, avg_mem={avg_mem}, peak_mem={peak_mem}")
+
+                # Create QTreeWidgetItem with extracted metrics
                 item = QTreeWidgetItem([
                     func_name,
                     str(iters),
@@ -288,7 +321,16 @@ class RuntimeTab(QWidget):
                     f"{avg_wall_call:.8f}",
                     f"{stdev_wall_call:.8f}"
                 ])
+
+                # Add the item to the QTreeWidget
                 self.runtime_tree.addTopLevelItem(item)
+                print(f"[DEBUG] Added QTreeWidgetItem for: {func_name}")
+
+        # Refresh and redraw the tree to ensure visibility
+        self.runtime_tree.viewport().update()
+        self.runtime_tree.repaint()
+
+        print("[DEBUG] update_runtime() completed.")
 
 
 class DataFlowTab(QWidget):
@@ -304,24 +346,62 @@ class DataFlowTab(QWidget):
         layout.addWidget(self.dataflow_text)
 
     def update_dataflow(self, data_flow):
+        """
+        Update the data flow analysis display with detailed information.
+        """
         self.dataflow_text.clear()
+
         if not data_flow:
             self.dataflow_text.append("No data flow analysis available.\n")
             return
+
         for file, funcs in data_flow.items():
             self.dataflow_text.append(f"File: {file}")
+
             for func, details in funcs.items():
                 self.dataflow_text.append(f"  Function: {func}")
                 self.dataflow_text.append("    Variables:")
+
+                # Display Variable Definitions and Usage
                 for var, info in details.get("variables", {}).items():
-                    defined = info.get("defined", "")
-                    used = info.get("used", "")
-                    self.dataflow_text.append(f"      {var}: Defined at line {defined}, Used at lines {used}")
+                    defined = info.get("defined", "N/A")
+                    used = info.get("used", [])
+                    used_lines = ", ".join(map(str, used)) if used else "None"
+                    self.dataflow_text.append(f"      {var}: Defined at line {defined}, Used at lines {used_lines}")
+
+                # Display Dependencies
                 deps = details.get("dependencies", {})
                 reads = deps.get("reads", [])
                 writes = deps.get("writes", [])
+                returns = deps.get("returns", [])
+                function_calls = deps.get("function_calls", [])
+                control_flows = deps.get("control_flows", [])
+                exception_handling = deps.get("exception_handling", [])
+                side_effects = deps.get("side_effects", [])
+                input_output_relations = deps.get("input_output_relations", [])
+
                 self.dataflow_text.append("    Dependencies:")
                 self.dataflow_text.append(f"      Reads: {', '.join(reads) if reads else 'None'}")
                 self.dataflow_text.append(f"      Writes: {', '.join(writes) if writes else 'None'}")
+                self.dataflow_text.append(f"      Returns: {', '.join(returns) if returns else 'None'}")
+                self.dataflow_text.append(
+                    f"      Function Calls: {', '.join(function_calls) if function_calls else 'None'}")
+                self.dataflow_text.append(
+                    f"      Control Flows: {', '.join(control_flows) if control_flows else 'None'}")
+                self.dataflow_text.append(
+                    f"      Exception Handling: {', '.join(exception_handling) if exception_handling else 'None'}")
+                self.dataflow_text.append(f"      Side Effects: {', '.join(side_effects) if side_effects else 'None'}")
+
+                # Display Input-Output Relations in a more readable format
+                if input_output_relations:
+                    self.dataflow_text.append("      Input-Output Relations:")
+                    for relation in input_output_relations:
+                        var_name, operation, op_type = relation
+                        self.dataflow_text.append(f"        {var_name} -> {operation} ({op_type})")
+                else:
+                    self.dataflow_text.append("      Input-Output Relations: None")
+
                 self.dataflow_text.append("")  # Extra newline for spacing.
+
+        # Scroll to the end for the latest update
         self.dataflow_text.moveCursor(QTextCursor.End)

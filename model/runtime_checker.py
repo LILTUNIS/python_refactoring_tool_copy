@@ -3,12 +3,12 @@ import inspect
 import time
 import timeit
 import tracemalloc
-import gc
 import random
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple, Callable
-from inspect import Parameter
+from typing import Any, Dict, List, Tuple, Callable, get_origin, get_args
+
+from model.data_flow_analyzer import get_usage_info
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logging.disable(logging.DEBUG)
@@ -66,60 +66,101 @@ class RuntimeAnalyzer:
 
         return wrapper
 
-    def generate_dummy_arguments(self, func: Callable, list_size: int = 100) -> Tuple[List[Any], Dict[str, Any]]:
+    def generate_dummy_arguments(self, func: Callable, list_size: int = 100) -> Tuple[list, dict]:
         """
-        More robust dummy argument generator that:
-        1. Respects known type hints (int, float, str, list, dict).
-        2. Generates only one actual list if multiple list-typed parameters exist,
-           to avoid "list * list" errors in user code that does direct multiplication.
-        3. Falls back to int for untyped or extra list parameters.
+        Generates test arguments based on function signature and enhanced usage analysis.
         """
 
-        def generate_test_list(size=list_size):
-            return [random.randint(-100, 100) for _ in range(size)]
+        def generate_test_list(size=list_size, elem_type=int):
+            """Generates a list of the specified element type."""
+            if elem_type == int:
+                return [random.randint(-100, 100) for _ in range(size)]
+            elif elem_type == float:
+                return [random.uniform(-100, 100) for _ in range(size)]
+            elif elem_type == str:
+                return [f"string_{i}" for i in range(size)]
+            elif elem_type == bool:
+                return [random.choice([True, False]) for _ in range(size)]
+            else:
+                # Default to a list of integers if type is unknown
+                return [random.randint(-100, 100) for _ in range(size)]
+
+        # 1. Get enhanced usage info for the function parameters
+        usage_info = get_usage_info(func)
+        logging.debug(f"[DEBUG] Enhanced Usage info for function '{func.__name__}': {usage_info}")
 
         signature = inspect.signature(func)
         args, kwargs = [], {}
 
-        # Track how many list parameters we have assigned so far
-        list_param_count = 0
-
         for name, param in signature.parameters.items():
-            # 1. If there's a default, just use it.
-            if param.default is not Parameter.empty:
+            has_default = (param.default != inspect.Parameter.empty)
+
+            # 2. If there's a default, use it
+            if has_default:
                 kwargs[name] = param.default
                 continue
 
-            # 2. Check explicit type hints
+            # 3. Handle known annotations (int, float, str, list, etc.)
+            origin = get_origin(param.annotation)
+            args_info = get_args(param.annotation)
+
+            # 3.1 Direct Type Hints
             if param.annotation == int:
                 args.append(random.randint(-100, 100))
             elif param.annotation == float:
                 args.append(random.uniform(-100, 100))
             elif param.annotation == str:
                 args.append("test_string")
-            elif getattr(param.annotation, '__origin__', None) == list:
-                # If multiple list-typed params appear, only the first is a real list.
-                # Additional list-typed params become integers to avoid "list * list" errors.
-                list_param_count += 1
-                if list_param_count == 1:
-                    args.append(generate_test_list())
+            elif param.annotation == bool:
+                args.append(random.choice([True, False]))
+            elif (param.annotation == list or origin == list or origin == List):
+                if args_info:
+                    elem_type = args_info[0]
+                    args.append(generate_test_list(elem_type=elem_type))
                 else:
-                    # Fallback to an integer for the second+ list param
-                    args.append(random.randint(1, 10))
-            elif getattr(param.annotation, '__origin__', None) == dict:
-                kwargs[name] = {f"key_{i}": i for i in range(10)}
+                    args.append(generate_test_list())
 
-            # 3. Handle *args or **kwargs
-            elif param.kind == Parameter.VAR_POSITIONAL:
-                # We'll generate a single list for *args
-                args.extend(generate_test_list())
-            elif param.kind == Parameter.VAR_KEYWORD:
-                # We'll generate a small dict for **kwargs
-                kwargs.update({f"key_{i}": i for i in range(10)})
-
-            # 4. If no annotation or unknown annotation, default to int
+            # 4. Fallback using enhanced usage_info
             else:
-                args.append(random.randint(-100, 100))
+                usage = usage_info.get(name, {})
+                inferred_type = usage.get("type", "int")
+
+                # 4.1 If a type is inferred, use it
+                if inferred_type == "list":
+                    val = generate_test_list()
+                    logging.debug(f"[DEBUG] '{name}' inferred as list => {val}")
+                elif inferred_type == "float":
+                    val = random.uniform(-100, 100)
+                    logging.debug(f"[DEBUG] '{name}' inferred as float => {val}")
+                elif inferred_type == "str":
+                    val = "inferred_string"
+                    logging.debug(f"[DEBUG] '{name}' inferred as str => {val}")
+                elif inferred_type == "bool":
+                    val = random.choice([True, False])
+                    logging.debug(f"[DEBUG] '{name}' inferred as bool => {val}")
+                elif inferred_type == "Callable":
+                    val = lambda: None  # Mock function for Callable types
+                    logging.debug(f"[DEBUG] '{name}' inferred as Callable => Mock Function")
+                elif inferred_type == "dict":
+                    val = {f"key_{i}": i for i in range(5)}
+                    logging.debug(f"[DEBUG] '{name}' inferred as dict => {val}")
+                else:
+                    # 4.2 If no type is inferred, use usage patterns
+                    if usage.get("iterated") or usage.get("len_called"):
+                        val = generate_test_list()
+                        logging.debug(f"[DEBUG] '{name}' is iterated or len() called => list: {val}")
+                    elif usage.get("arithmetic"):
+                        val = random.randint(-100, 100)
+                        logging.debug(f"[DEBUG] '{name}' is used in arithmetic => int: {val}")
+                    elif usage.get("bool_check"):
+                        val = random.choice([True, False])
+                        logging.debug(f"[DEBUG] '{name}' is used in boolean checks => bool: {val}")
+                    else:
+                        # 4.3 Absolute fallback - Use "int" as last resort
+                        val = random.randint(-100, 100)
+                        logging.debug(f"[DEBUG] No usage data for '{name}'. Defaulting to int: {val}")
+
+                args.append(val)
 
         return args, kwargs
 

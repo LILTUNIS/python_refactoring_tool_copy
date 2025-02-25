@@ -101,7 +101,13 @@ class CodeAnalysisController:
             # -----------------------------------------------------------
             # 6. Compute Key Metrics (DashboardMetricsService)
             # -----------------------------------------------------------
-            dashboard_metrics = DashboardMetricsService.compute_key_metrics(static_nodes, token_clones)
+            # Use the previously fetched runtime results
+            runtime_data = runtime_results
+            logging.debug(f"[DEBUG] Runtime Data: {runtime_data}")
+
+            # Pass runtime_data as the third argument
+            dashboard_metrics = DashboardMetricsService.compute_key_metrics(static_nodes, token_clones, runtime_data)
+
             logging.debug(f"dashboard_metrics = {dashboard_metrics}")
 
             # -----------------------------------------------------------

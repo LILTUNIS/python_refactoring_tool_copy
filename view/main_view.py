@@ -1,4 +1,3 @@
-import sys
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout,
     QGridLayout, QFileDialog, QMessageBox, QTabWidget, QSlider, QLineEdit,
@@ -51,7 +50,7 @@ class ApplicationView(QMainWindow):
         # Add tabs to the QTabWidget
         self.notebook.addTab(self.summary_tab, "Summary")
         self.notebook.addTab(self.static_tab, "Static Analysis")
-        self.notebook.addTab(self.clone_tab, "Clone Detection")
+        self.notebook.addTab(self.clone_tab, "Similarity")
         self.notebook.addTab(self.runtime_tab, "Runtime")
         self.notebook.addTab(self.dataflow_tab, "Data Flow")
 
