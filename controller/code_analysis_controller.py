@@ -62,11 +62,24 @@ class CodeAnalysisController:
             logging.debug(f"Global namespace populated with {len(self.global_namespace)} functions.")
 
             # 2. Static Analysis
-            ast_trees, static_nodes, similarity_results = \
-                StaticAnalysisService.parse_and_find_similarities(python_files, threshold)
+            static_analysis_result = StaticAnalysisService.parse_and_find_similarities(python_files, threshold)
 
-            logging.debug(f"static_nodes length = {len(static_nodes)}")
-            logging.debug(f"similarity_results length = {len(similarity_results)}")
+            # Debug: Check the type and length of the returned result
+            print(f"[DEBUG] Type of static_analysis_result: {type(static_analysis_result)}")
+            print(f"[DEBUG] Length of static_analysis_result: {len(static_analysis_result)}")
+            print(f"[DEBUG] Contents of static_analysis_result: {static_analysis_result}")
+
+            # Ensure exactly three values are returned, else log an error
+            if isinstance(static_analysis_result, tuple) and len(static_analysis_result) == 3:
+                ast_trees, static_nodes, similarity_results = static_analysis_result
+                print(f"[DEBUG] AST Trees: {ast_trees}")
+                print(f"[DEBUG] Static Nodes: {static_nodes}")
+                print(f"[DEBUG] Similarity Results: {similarity_results}")
+            else:
+                logging.error(
+                    f"[ERROR] Unexpected return value from parse_and_find_similarities(). Expected 3 elements, got {len(static_analysis_result)}")
+                raise ValueError(
+                    f"Unexpected number of return values from parse_and_find_similarities(): {len(static_analysis_result)}")
 
             # 3. Token-Based Analysis
             token_clones = TokenAnalysisService.detect_token_clones(python_files, threshold)

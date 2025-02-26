@@ -1,3 +1,5 @@
+import traceback
+
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout,
     QGridLayout, QFileDialog, QMessageBox, QTabWidget, QSlider, QLineEdit,
@@ -147,19 +149,52 @@ class ApplicationView(QMainWindow):
             QMessageBox.critical(self, "Error", "No file or folder selected!")
             return
 
+        # Debug: Check the state of the file/folder paths
+        print("[DEBUG] File Path:", self.file_path)
+        print("[DEBUG] Folder Path:", self.folder_path)
+
         try:
             threshold = self.threshold_slider.value() / 100.0
-            num_tests = int(self.test_cases_entry.text())
+
+            # Get and clean the input for test cases
+            num_tests_text = self.test_cases_entry.text().strip()
+
+            # Debug: Display the raw and cleaned input
+            print("[DEBUG] Raw Input for Test Cases:", self.test_cases_entry.text())
+            print("[DEBUG] Cleaned Input for Test Cases:", num_tests_text)
+
+            # Enhanced validation for positive integer
+            if not num_tests_text.isdigit():
+                raise ValueError("Test cases input is not a valid positive integer.")
+
+            num_tests = int(num_tests_text)
+
+            # Check if the number is positive
             if num_tests <= 0:
-                raise ValueError("Number of test cases must be > 0.")
+                raise ValueError("Number of test cases must be greater than 0.")
+
             analysis_path = self.file_path if self.file_path else self.folder_path
+
+            # Debug: Confirm analysis path and parameters
+            print("[DEBUG] Analysis Path:", analysis_path)
+            print("[DEBUG] Threshold:", threshold)
+            print("[DEBUG] Number of Test Cases:", num_tests)
 
             # Show progress bar during analysis
             self.progress.setVisible(True)
             QApplication.processEvents()  # Force update of UI
 
             # Call the controller's analysis method
+            print("[DEBUG] Calling start_analysis() with:")
+            print("        - Analysis Path:", analysis_path)
+            print("        - Threshold:", threshold)
+            print("        - Number of Test Cases:", num_tests)
+
+            # Call the controller's analysis method
             results = self.controller.start_analysis(analysis_path, threshold, num_tests)
+
+            print("[DEBUG] start_analysis() Returned:", results)
+
             self.analysis_results = results
 
             # Update each tab with its corresponding results
@@ -177,10 +212,18 @@ class ApplicationView(QMainWindow):
             self.summary_tab.show_duplicate_pairs(insights.get("top_duplicate_pairs", []))
             self.summary_tab.show_refactoring_suggestions(insights.get("refactoring_suggestions", []))
 
-        except ValueError:
-            QMessageBox.critical(self, "Input Error", "Please enter a valid positive integer for test cases.")
+        except ValueError as ve:
+            # Display the specific value error message along with the traceback
+            print("[ERROR] Value Error:", ve)
+            traceback.print_exc()
+            QMessageBox.critical(self, "Input Error", str(ve))
+
         except Exception as e:
+            # Display any other unexpected errors with full traceback
+            print("[ERROR] Unexpected Exception:", e)
+            traceback.print_exc()
             QMessageBox.critical(self, "Analysis Error", str(e))
+
         finally:
             self.progress.setVisible(False)
 

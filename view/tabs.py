@@ -348,6 +348,8 @@ class DataFlowTab(QWidget):
     def update_dataflow(self, data_flow):
         """
         Update the data flow analysis display with detailed information.
+        Expects 'input_output_relations' to be a list of dictionaries,
+        each containing keys like: 'var_name', 'desc', 'operation', etc.
         """
         self.dataflow_text.clear()
 
@@ -367,7 +369,9 @@ class DataFlowTab(QWidget):
                     defined = info.get("defined", "N/A")
                     used = info.get("used", [])
                     used_lines = ", ".join(map(str, used)) if used else "None"
-                    self.dataflow_text.append(f"      {var}: Defined at line {defined}, Used at lines {used_lines}")
+                    self.dataflow_text.append(
+                        f"      {var}: Defined at line {defined}, Used at lines {used_lines}"
+                    )
 
                 # Display Dependencies
                 deps = details.get("dependencies", {})
@@ -385,19 +389,30 @@ class DataFlowTab(QWidget):
                 self.dataflow_text.append(f"      Writes: {', '.join(writes) if writes else 'None'}")
                 self.dataflow_text.append(f"      Returns: {', '.join(returns) if returns else 'None'}")
                 self.dataflow_text.append(
-                    f"      Function Calls: {', '.join(function_calls) if function_calls else 'None'}")
+                    f"      Function Calls: {', '.join(function_calls) if function_calls else 'None'}"
+                )
                 self.dataflow_text.append(
-                    f"      Control Flows: {', '.join(control_flows) if control_flows else 'None'}")
+                    f"      Control Flows: {', '.join(control_flows) if control_flows else 'None'}"
+                )
                 self.dataflow_text.append(
-                    f"      Exception Handling: {', '.join(exception_handling) if exception_handling else 'None'}")
-                self.dataflow_text.append(f"      Side Effects: {', '.join(side_effects) if side_effects else 'None'}")
+                    f"      Exception Handling: {', '.join(exception_handling) if exception_handling else 'None'}"
+                )
+                self.dataflow_text.append(
+                    f"      Side Effects: {', '.join(side_effects) if side_effects else 'None'}"
+                )
 
                 # Display Input-Output Relations in a more readable format
                 if input_output_relations:
                     self.dataflow_text.append("      Input-Output Relations:")
                     for relation in input_output_relations:
-                        var_name, operation, op_type = relation
-                        self.dataflow_text.append(f"        {var_name} -> {operation} ({op_type})")
+                        # relation is now a dictionary, not a tuple
+                        var_name = relation.get("var_name", "??")
+                        desc = relation.get("desc", "")
+                        op_type = relation.get("operation", "")
+                        # Optionally, you can also use 'relation.get("context")' if needed
+
+                        # Create a readable line
+                        self.dataflow_text.append(f"        {var_name} -> {desc} ({op_type})")
                 else:
                     self.dataflow_text.append("      Input-Output Relations: None")
 

@@ -156,11 +156,17 @@ class StaticAnalysisService:
         all_similar_nodes = []
         similarity_results = []
 
+        # Debug: Initial State
+        print("[DEBUG] Initial AST Trees:", ast_trees.keys())
+
         for file, tree in ast_trees.items():
             with open(file, "r", encoding="utf-8") as f:
                 source_code = f.read()
                 static_nodes = find_similar_nodes(tree, source_code, threshold)
                 all_similar_nodes.extend(static_nodes)
+
+                # Debug: Check Static Nodes
+                print(f"[DEBUG] Static Nodes for file '{file}':", static_nodes)
 
                 # Convert raw result dicts to typed SimilarityResult objects
                 for node in static_nodes:
@@ -177,6 +183,15 @@ class StaticAnalysisService:
                             ast_pattern=node["function1_metrics"].get("ast_pattern", {})
                         )
                         similarity_results.append(result)
+
+                        # Debug: Check Similarity Result
+                        print(f"[DEBUG] Similarity Result for file '{file}':", result)
+
+        # Debug: Check Final Results Before Returning
+        print("[DEBUG] Final AST Trees:", ast_trees)
+        print("[DEBUG] Final All Similar Nodes:", all_similar_nodes)
+        print("[DEBUG] Final Similarity Results:", similarity_results)
+        print("[DEBUG] Returning:", (ast_trees, all_similar_nodes, similarity_results))
 
         logging.debug("Static analysis complete.")
         return ast_trees, all_similar_nodes, similarity_results

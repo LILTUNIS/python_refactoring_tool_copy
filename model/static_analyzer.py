@@ -127,14 +127,6 @@ def analyze_return_behavior(node: ast.FunctionDef) -> str:
     """
     Analyze the return behavior of a function.
 
-    Determines whether all paths have a return statement ("Always"),
-    none do ("Never"), or if the behavior is inconsistent ("Mixed").
-
-    Args:
-        node: A FunctionDef AST node.
-
-    Returns:
-        A string: "Always", "Never", or "Mixed".
     """
 
     def has_explicit_return(n: ast.AST) -> bool:
@@ -152,14 +144,6 @@ def analyze_return_behavior(node: ast.FunctionDef) -> str:
 def calculate_lines_of_code(node: ast.AST, source_code: str, debug: bool = False) -> int:
     """
     Calculate the number of executable lines of code for a node.
-
-    Args:
-        node: The AST node (typically a FunctionDef).
-        source_code: The entire source code as a string.
-        debug: If True, outputs debugging information.
-
-    Returns:
-        The number of executable (non-blank, non-comment) lines.
     """
     if hasattr(node, 'lineno') and hasattr(node, 'end_lineno'):
         lines = source_code.splitlines()[node.lineno - 1:node.end_lineno]
@@ -176,11 +160,6 @@ def calculate_nesting_depth(node: ast.AST) -> int:
     """
     Recursively calculate the maximum nesting depth of control flow structures in a node.
 
-    Args:
-        node: An AST node.
-
-    Returns:
-        The maximum nesting depth as an integer.
     """
 
     def helper(n: ast.AST, current_depth: int) -> int:

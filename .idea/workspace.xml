@@ -4,13 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-02-22">
+    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-02-25">
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/mainView.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/mainView.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -166,7 +166,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740189810595</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="new 2025-02-22">
+      <option name="closed" value="true" />
+      <created>1740502583757</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1740502583757</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
