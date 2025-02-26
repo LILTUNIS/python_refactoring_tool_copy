@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-02-25">
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" afterDir="false" />
-    </list>
+    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-02-26" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -174,7 +166,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740502583757</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="new 2025-02-26">
+      <option name="closed" value="true" />
+      <created>1740610022331</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1740610022331</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -202,6 +202,7 @@
     <MESSAGE value="new" />
     <MESSAGE value="new 2025-02-20" />
     <MESSAGE value="new 2025-02-22" />
-    <option name="LAST_COMMIT_MESSAGE" value="new 2025-02-22" />
+    <MESSAGE value="new 2025-02-26" />
+    <option name="LAST_COMMIT_MESSAGE" value="new 2025-02-26" />
   </component>
 </project>
