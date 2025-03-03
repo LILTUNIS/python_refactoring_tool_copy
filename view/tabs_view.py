@@ -9,6 +9,8 @@ from PyQt5.QtGui import QTextCursor
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+from model.data_flow_analyzer import compare_function_similarity
+
 
 def create_treewidget(columns, headings, width=120, parent=None):
     """
@@ -161,7 +163,6 @@ class SummaryTab(QWidget):
         # Display Total Avg Memory and Peak Memory
         total_avg_mem = metrics.get("total_avg_memory", 0.0)
         peak_mem = metrics.get("peak_memory", 0.0)
-        logging.debug(f"[DEBUG] Displaying Total Avg Memory: {total_avg_mem} KB, Peak Memory: {peak_mem} KB")
         self.summary_labels["Total Avg Memory"].setText(f"Total Avg Memory: {total_avg_mem:.2f} KB")
         self.summary_labels["Peak Memory"].setText(f"Peak Memory: {peak_mem:.2f} KB")
 
@@ -232,23 +233,34 @@ class CloneTab(QWidget):
 
     def initUI(self):
         layout = QVBoxLayout(self)
-        cols = ("Pair", "Token Sim", "AST Sim")
-        heads = ["Function Pair", "Token Similarity", "AST Similarity"]
+        cols = ("Pair", "Token Sim", "AST Sim", "Dataflow Sim")
+        heads = ["Function Pair", "Token Similarity", "AST Similarity", "Dataflow Similarity"]
         self.clone_tree = create_treewidget(cols, heads, width=150)
         layout.addWidget(self.clone_tree)
 
     def update_clone(self, clone_results):
         self.clone_tree.clear()
+
         for res in clone_results:
             f1 = res.get("func1") or res.get("function1_metrics", {}).get("name", "")
             f2 = res.get("func2") or res.get("function2_metrics", {}).get("name", "")
             token_sim = res.get("token_similarity", 0)
             ast_sim = res.get("ast_similarity", res.get("similarity", 0))
             pair = f"{f1} & {f2}"
+
+            # Extract the dependencies for both functions
+            func1_dep = res.get("function1_metrics", {}).get("dependencies", {})
+            func2_dep = res.get("function2_metrics", {}).get("dependencies", {})
+
+            # Calculate the Dataflow Similarity score
+            dataflow_similarity = compare_function_similarity(func1_dep, func2_dep)
+
+            # Output to the QTreeWidget
             item = QTreeWidgetItem([
                 pair,
                 f"{token_sim:.2f}",
-                f"{ast_sim:.2f}"
+                f"{ast_sim:.2f}",
+                f"{dataflow_similarity:.2f}"
             ])
             self.clone_tree.addTopLevelItem(item)
 
@@ -274,27 +286,22 @@ class RuntimeTab(QWidget):
         layout.addWidget(self.runtime_tree)
 
     def update_runtime(self, runtime):
-        print("[DEBUG] update_runtime() called.")
-        print(f"[DEBUG] Runtime Data Received: {runtime}")
+
 
         # Clear existing data
         self.runtime_tree.clear()
 
         # Get the functions list from the runtime data
         funcs = runtime.get("functions", [])
-        print(f"[DEBUG] Functions Extracted: {funcs}")
 
         # Iterate over each function's metrics
         for f in funcs:
             func_name = f.get("func_name", "Unknown Function")
-            print(f"[DEBUG] Processing Function: {func_name}")
 
             test_results = f.get("test_results", {})
-            print(f"[DEBUG] Test Results: {test_results}")
 
             # Iterate over each test result for the function
             for iters, data in test_results.items():
-                print(f"[DEBUG] Iteration: {iters}, Data: {data}")
 
                 # Extract runtime metrics
                 avg_cpu = float(data.get("avg_cpu_time", 0.0))
@@ -305,9 +312,6 @@ class RuntimeTab(QWidget):
                 avg_wall_call = float(data.get("avg_wall_per_call", 0.0))
                 stdev_wall_call = float(data.get("stdev_wall_per_call", 0.0))
 
-                print(f"[DEBUG] Creating QTreeWidgetItem for: {func_name}")
-                print(
-                    f"  [DEBUG] avg_cpu={avg_cpu}, total_wall={total_wall}, cpu_usage={cpu_usage}, avg_mem={avg_mem}, peak_mem={peak_mem}")
 
                 # Create QTreeWidgetItem with extracted metrics
                 item = QTreeWidgetItem([
@@ -324,13 +328,12 @@ class RuntimeTab(QWidget):
 
                 # Add the item to the QTreeWidget
                 self.runtime_tree.addTopLevelItem(item)
-                print(f"[DEBUG] Added QTreeWidgetItem for: {func_name}")
 
         # Refresh and redraw the tree to ensure visibility
         self.runtime_tree.viewport().update()
         self.runtime_tree.repaint()
 
-        print("[DEBUG] update_runtime() completed.")
+
 
 
 class DataFlowTab(QWidget):

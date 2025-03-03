@@ -4,14 +4,11 @@ import time
 import timeit
 import tracemalloc
 import random
-import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple, Callable, get_origin, get_args
 
 from model.data_flow_analyzer import get_usage_info
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-logging.disable(logging.DEBUG)
 
 @dataclass
 class RuntimeMetrics:
@@ -47,7 +44,6 @@ class RuntimeAnalyzer:
 
     def runtime_check(self, func: Callable) -> Callable:
         """Decorator that measures execution time on each call."""
-
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             start = time.perf_counter()
@@ -70,7 +66,6 @@ class RuntimeAnalyzer:
         """
         Generates test arguments based on function signature and enhanced usage analysis.
         """
-
         def generate_test_list(size=list_size, elem_type=int):
             """Generates a list of the specified element type."""
             if elem_type == int:
@@ -85,9 +80,8 @@ class RuntimeAnalyzer:
                 # Default to a list of integers if type is unknown
                 return [random.randint(-100, 100) for _ in range(size)]
 
-        # 1. Get enhanced usage info for the function parameters
+        # Get enhanced usage info for the function parameters
         usage_info = get_usage_info(func)
-        logging.debug(f"[DEBUG] Enhanced Usage info for function '{func.__name__}': {usage_info}")
 
         signature = inspect.signature(func)
         args, kwargs = [], {}
@@ -95,16 +89,16 @@ class RuntimeAnalyzer:
         for name, param in signature.parameters.items():
             has_default = (param.default != inspect.Parameter.empty)
 
-            # 2. If there's a default, use it
+            # If there's a default, use it
             if has_default:
                 kwargs[name] = param.default
                 continue
 
-            # 3. Handle known annotations (int, float, str, list, etc.)
+            # Handle known annotations (int, float, str, list, etc.)
             origin = get_origin(param.annotation)
             args_info = get_args(param.annotation)
 
-            # 3.1 Direct Type Hints
+            # Direct Type Hints
             if param.annotation == int:
                 args.append(random.randint(-100, 100))
             elif param.annotation == float:
@@ -120,45 +114,33 @@ class RuntimeAnalyzer:
                 else:
                     args.append(generate_test_list())
 
-            # 4. Fallback using enhanced usage_info
+            # Fallback using enhanced usage_info
             else:
                 usage = usage_info.get(name, {})
                 inferred_type = usage.get("type", "int")
 
-                # 4.1 If a type is inferred, use it
                 if inferred_type == "list":
                     val = generate_test_list()
-                    logging.debug(f"[DEBUG] '{name}' inferred as list => {val}")
                 elif inferred_type == "float":
                     val = random.uniform(-100, 100)
-                    logging.debug(f"[DEBUG] '{name}' inferred as float => {val}")
                 elif inferred_type == "str":
                     val = "inferred_string"
-                    logging.debug(f"[DEBUG] '{name}' inferred as str => {val}")
                 elif inferred_type == "bool":
                     val = random.choice([True, False])
-                    logging.debug(f"[DEBUG] '{name}' inferred as bool => {val}")
                 elif inferred_type == "Callable":
                     val = lambda: None  # Mock function for Callable types
-                    logging.debug(f"[DEBUG] '{name}' inferred as Callable => Mock Function")
                 elif inferred_type == "dict":
                     val = {f"key_{i}": i for i in range(5)}
-                    logging.debug(f"[DEBUG] '{name}' inferred as dict => {val}")
                 else:
-                    # 4.2 If no type is inferred, use usage patterns
                     if usage.get("iterated") or usage.get("len_called"):
                         val = generate_test_list()
-                        logging.debug(f"[DEBUG] '{name}' is iterated or len() called => list: {val}")
                     elif usage.get("arithmetic"):
                         val = random.randint(-100, 100)
-                        logging.debug(f"[DEBUG] '{name}' is used in arithmetic => int: {val}")
                     elif usage.get("bool_check"):
                         val = random.choice([True, False])
-                        logging.debug(f"[DEBUG] '{name}' is used in boolean checks => bool: {val}")
                     else:
-                        # 4.3 Absolute fallback - Use "int" as last resort
+                        # Absolute fallback - Use "int" as last resort
                         val = random.randint(-100, 100)
-                        logging.debug(f"[DEBUG] No usage data for '{name}'. Defaulting to int: {val}")
 
                 args.append(val)
 
@@ -167,11 +149,9 @@ class RuntimeAnalyzer:
     def _run_cpu_time_test(self, func: Callable, iterations: int,
                            args: List[Any], kwargs: Dict[str, Any]) -> Tuple[float, float, float]:
         """Measure CPU and wall-clock time using timeit for stable timings."""
-
         def test_func():
             result = func(*args, **kwargs)
             # Avoid optimization by referencing result
-            # but do not attempt to hash lists/dicts directly
             if isinstance(result, (int, float, str)):
                 return hash(result)
             return 0
@@ -205,7 +185,6 @@ class RuntimeAnalyzer:
             func(*args, **kwargs)
             snapshot_after = tracemalloc.take_snapshot()
             stats = snapshot_after.compare_to(snapshot_before, 'lineno')
-            # Sum absolute differences to capture net changes
             mem_diff = sum(abs(stat.size_diff) for stat in stats)
             mem_diffs.append(mem_diff)
             peak = max((abs(stat.size_diff) for stat in stats), default=0)
@@ -218,13 +197,8 @@ class RuntimeAnalyzer:
 
     def run_tests(self, num_tests: int) -> None:
         """Run dummy tests based on the number of test cases specified by the user."""
-        logging.info(f"Generating {num_tests} test cases...")
-
         for _ in range(num_tests):
-            # Simulate a dummy test execution
             time.sleep(random.uniform(0.01, 0.1))  # Simulate execution time
-
-        logging.info("Tests completed.")
 
     def apply_runtime_checks(self, similar_nodes: List[Dict], global_namespace: Dict[str, Any], num_tests: int,
                              dummy_list_size: int = 100) -> None:
@@ -251,13 +225,11 @@ class RuntimeAnalyzer:
                     decorated_func = self.runtime_check(original_func)
                     global_namespace[func_name] = decorated_func
 
-                    # Generate robust dummy arguments
                     args, kwargs = self.generate_dummy_arguments(original_func, list_size=dummy_list_size)
 
                     if func_name not in self.metrics:
                         self.metrics[func_name] = RuntimeMetrics()
 
-                    # Run tests exactly num_tests times and record CPU times
                     avg_cpu_time, total_wall_time, cpu_usage_percent = self._run_cpu_time_test(
                         decorated_func, num_tests, args, kwargs
                     )
@@ -265,7 +237,6 @@ class RuntimeAnalyzer:
                         decorated_func, num_tests, args, kwargs
                     )
 
-                    # Store the results in the metrics
                     self.metrics[func_name].test_results[num_tests] = {
                         "avg_cpu_time": avg_cpu_time,
                         "total_wall_time": total_wall_time,
@@ -273,10 +244,3 @@ class RuntimeAnalyzer:
                         "total_memory_kb": total_memory_kb,
                         "peak_memory_kb": peak_memory_kb,
                     }
-
-                    print(
-                        f"{func_name} [{num_tests}]: avg_cpu_time={avg_cpu_time:.6e}s, "
-                        f"total_wall_time={total_wall_time:.6e}s, "
-                        f"cpu_usage={cpu_usage_percent:.2f}%, "
-                        f"avg_mem={total_memory_kb:.2f}KB, peak_mem={peak_memory_kb:.2f}KB"
-                    )

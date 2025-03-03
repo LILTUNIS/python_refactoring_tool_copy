@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-02-26" />
+    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-02-26">
+      <change afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/refactoring_sug.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/data_flow_analyzer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/runtime_checker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/static_analyzer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/model/token_based_det.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/model/token_based_det.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs_view.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,39 +57,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.analysis_services.executor&quot;: &quot;Run&quot;,
-    &quot;Python.application_view.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ast_parser.executor&quot;: &quot;Run&quot;,
-    &quot;Python.code_analysis_controller.executor&quot;: &quot;Run&quot;,
-    &quot;Python.code_similarity_view.executor&quot;: &quot;Run&quot;,
-    &quot;Python.data_flow_analyzer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.example1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.file.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.mainView.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main_controller.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main_view.executor&quot;: &quot;Run&quot;,
-    &quot;Python.runtime_checker.executor&quot;: &quot;Run&quot;,
-    &quot;Python.similarity_checker.executor&quot;: &quot;Run&quot;,
-    &quot;Python.static_analyzer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tabs.executor&quot;: &quot;Run&quot;,
-    &quot;Python.token_based_det.executor&quot;: &quot;Run&quot;,
-    &quot;Python.visualization.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.analysis_services.executor": "Run",
+    "Python.application_view.executor": "Run",
+    "Python.ast_parser.executor": "Run",
+    "Python.code_analysis_controller.executor": "Run",
+    "Python.code_similarity_view.executor": "Run",
+    "Python.data_flow_analyzer.executor": "Run",
+    "Python.example1.executor": "Run",
+    "Python.file.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.mainView.executor": "Run",
+    "Python.main_controller.executor": "Run",
+    "Python.main_view.executor": "Run",
+    "Python.runtime_checker.executor": "Run",
+    "Python.similarity_checker.executor": "Run",
+    "Python.static_analyzer.executor": "Run",
+    "Python.tabs.executor": "Run",
+    "Python.token_based_det.executor": "Run",
+    "Python.visualization.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\model" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\file" />
       <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\view" />
       <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\tests" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool" />
     </key>
   </component>
   <component name="RunManager">
@@ -113,7 +125,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-fc1d50d2d915-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.24978.54" />
+        <option value="bundled-python-sdk-14705d77f0bb-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.25659.43" />
       </set>
     </attachedChunks>
   </component>
@@ -174,7 +186,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740610022331</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="new 2025-02-26">
+      <option name="closed" value="true" />
+      <created>1740610072741</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1740610072741</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

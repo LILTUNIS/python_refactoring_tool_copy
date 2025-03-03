@@ -2,34 +2,31 @@
 """
 Analyzes data flow within Python ASTs, providing details on variable usage,
 dependencies, control flows, exception handling, and side effects.
-
-Enhancement:
-- All entries in `input_output_relations` are stored as dictionaries, e.g.:
-    {
-      "var_name": "total",
-      "desc": "Assign the result of 'int extra_computation'",
-      "operation": "Assign",
-      "context": "Single-target assignment"
-    }
-- This prevents unpacking errors (no more 3-element tuple).
-- A helper function `create_human_readable_summary()` is included at the end
-  to convert these dictionaries into a bullet-point style text.
 """
-
-import ast
+import difflib
+import json
 import logging
 import inspect
-from typing import Dict, List, Any
+import re
+from typing import Dict, List, Any, Set
 
 logging.basicConfig(level=logging.DEBUG)
 
-def analyze_data_flow(tree: ast.AST, filename: str = "unknown_file.py") -> Dict[str, Dict]:
+import os
+import ast
+from typing import Dict
+
+
+def analyze_data_flow(tree: ast.AST, filename: str = None) -> Dict[str, Dict]:
     """
     Analyzes data flow within the given AST (Abstract Syntax Tree).
     Returns a dictionary mapping `filename` to a dictionary of function-specific results.
     """
-    print(f"Starting analyze_data_flow() for file: {filename}")
-    print(f"AST Tree: {ast.dump(tree)}")
+    # Apply basename here to ensure filename is just the name, not the full path
+    if filename:
+        filename = os.path.basename(filename)
+    else:
+        filename = "unknown_file.py"
 
     data_flow = {filename: {}}
 
@@ -37,8 +34,6 @@ def analyze_data_flow(tree: ast.AST, filename: str = "unknown_file.py") -> Dict[
     for node in ast.walk(tree):
         # Look for top-level function definitions
         if isinstance(node, ast.FunctionDef):
-            print(f"Processing function `{node.name}` in analyze_data_flow")
-
             # Ensure we have an entry in data_flow for this function
             if node.name not in data_flow[filename]:
                 data_flow[filename][node.name] = {
@@ -57,9 +52,6 @@ def analyze_data_flow(tree: ast.AST, filename: str = "unknown_file.py") -> Dict[
 
             variables = {}
             dependencies = extract_dependencies(node)
-
-            print(f"Collected Variables for `{node.name}`: {variables}")
-            print(f"Collected Dependencies for `{node.name}`: {dependencies}")
 
             # Single pass to collect variable definitions and usage
             for child in ast.walk(node):
@@ -87,10 +79,7 @@ def analyze_data_flow(tree: ast.AST, filename: str = "unknown_file.py") -> Dict[
             data_flow[filename][node.name]["variables"] = variables
             data_flow[filename][node.name]["dependencies"] = dependencies
 
-            print(f"Function `{node.name}` - Variables: {variables}")
-            print(f"Function `{node.name}` - Dependencies: {dependencies}")
 
-    print(f"Final Data Flow Analysis Results: {data_flow}")
     return data_flow
 
 
@@ -99,22 +88,12 @@ def _unparse_expr(node: ast.AST) -> str:
     Safely unparse an AST node into a string.
     Fallback to str(node) if ast.unparse() is not available or fails.
     """
-    print(f"\n[DEBUG] Starting _unparse_expr for Node: {type(node).__name__}")
-    print(f"[DEBUG] AST Node Dump: {ast.dump(node)}")
-
     if hasattr(ast, "unparse"):
-        print("[DEBUG] ast.unparse() is available.")
         try:
-            unparsed_expr = ast.unparse(node)
-            print(f"[DEBUG] Successfully Unparsed: {unparsed_expr}")
-            return unparsed_expr
-        except Exception as e:
-            print(f"[ERROR] Exception in ast.unparse(): {e}")
-            print("[DEBUG] Falling back to str(node).")
+            return ast.unparse(node)
+        except Exception:
             return str(node)
     else:
-        print("[WARNING] ast.unparse() is not available in this Python version.")
-        print("[DEBUG] Falling back to str(node).")
         return str(node)
 
 
@@ -135,9 +114,6 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
     skip_binops = set()
     custom_exceptions = set()
 
-    print(f"\n[DEBUG] Starting extract_dependencies for function: {node.name}")
-    print(f"[DEBUG] Function AST: {ast.dump(node)}")
-
     # 1. Detect custom exception classes in the function body
     for child in node.body:
         if isinstance(child, ast.ClassDef):
@@ -145,18 +121,14 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
                 if isinstance(base, ast.Name) and base.id == "Exception":
                     custom_exceptions.add(child.name)
                     exception_handling.add(f"Custom Exception: {child.name}")
-    print(f"[DEBUG] Custom Exceptions Detected: {custom_exceptions}")
 
     for child in ast.walk(node):
-        print(f"\n[DEBUG] Processing Node: {type(child).__name__} - {ast.dump(child)}")
 
         # A) Variable Writes (Assign)
         if isinstance(child, ast.Assign):
-            print(f"[DEBUG] Assignment Detected: {ast.dump(child)}")
             for t in child.targets:
                 if isinstance(t, ast.Name):
                     writes.add(t.id)
-                    print(f"[DEBUG] Write Detected: {t.id}")
 
             # If the assigned value is a BinOp
             if isinstance(child.value, ast.BinOp):
@@ -184,16 +156,12 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
                     }
                     input_output_relations.append(relation)
 
-            print(f"[DEBUG] Input-Output Relations Updated: {input_output_relations}")
-
         # B) Variable Reads (Name)
         elif isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load):
             reads.add(child.id)
-            print(f"[DEBUG] Read Detected: {child.id}")
 
         # C) Return Statements
         elif isinstance(child, ast.Return):
-            print(f"[DEBUG] Return Statement Detected: {ast.dump(child)}")
             if child.value:
                 return_expr = _unparse_expr(child.value)
                 returns.add(return_expr)
@@ -219,11 +187,8 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
                     }
                     input_output_relations.append(relation)
 
-            print(f"[DEBUG] Returns Updated: {returns}")
-
         # D) Function Calls
         elif isinstance(child, ast.Call):
-            print(f"[DEBUG] Function Call Detected: {ast.dump(child)}")
             if isinstance(child.func, ast.Name):
                 function_calls.add(child.func.id)
                 relation = {
@@ -253,13 +218,10 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
             ):
                 side_effects.add("I/O Operation")
 
-            print(f"[DEBUG] Function Calls Updated: {function_calls}")
-
         # E) Control Flow Structures
         elif isinstance(child, (ast.If, ast.For, ast.While, ast.Try)):
             flow_type = type(child).__name__
             control_flows.add(f"{node.name}->{flow_type}")
-            print(f"[DEBUG] Control Flow Detected: {control_flows}")
             relation = {
                 "var_name": "control_flow",
                 "desc": f"Encountered control flow: {flow_type}",
@@ -270,7 +232,6 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
 
         elif isinstance(child, ast.Break):
             control_flows.add(f"{node.name}->Break at line {child.lineno}")
-            print(f"[DEBUG] Break Statement Detected: {control_flows}")
             relation = {
                 "var_name": "control_flow",
                 "desc": f"Break statement at line {child.lineno}",
@@ -281,7 +242,6 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
 
         elif isinstance(child, ast.Continue):
             control_flows.add(f"{node.name}->Continue at line {child.lineno}")
-            print(f"[DEBUG] Continue Statement Detected: {control_flows}")
             relation = {
                 "var_name": "control_flow",
                 "desc": f"Continue statement at line {child.lineno}",
@@ -289,15 +249,6 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
                 "context": "ControlFlow"
             }
             input_output_relations.append(relation)
-
-    print(f"\n[DEBUG] Final Reads: {reads}")
-    print(f"[DEBUG] Final Writes: {writes}")
-    print(f"[DEBUG] Final Returns: {returns}")
-    print(f"[DEBUG] Final Function Calls: {function_calls}")
-    print(f"[DEBUG] Final Control Flows: {control_flows}")
-    print(f"[DEBUG] Final Exception Handling: {exception_handling}")
-    print(f"[DEBUG] Final Side Effects: {side_effects}")
-    print(f"[DEBUG] Final Input-Output Relations: {input_output_relations}")
 
     return {
         "reads": sorted(reads),
@@ -309,6 +260,7 @@ def extract_dependencies(node: ast.FunctionDef) -> Dict[str, List[Any]]:
         "side_effects": sorted(side_effects),
         "input_output_relations": input_output_relations
     }
+
 
 def get_usage_info(func) -> Dict[str, Dict[str, Any]]:
     """
@@ -439,17 +391,7 @@ def get_usage_info(func) -> Dict[str, Dict[str, Any]]:
 def create_human_readable_summary(input_output_relations: List[Dict[str, str]]) -> str:
     """
     Converts the list of dictionary-based relations into a bullet-point
-    summary. Example:
-
-    total is incremented by:
-      - Converting `extra_computation` to an integer
-      - sum of all positive numbers in `numbers`
-
-    2. Loop Details:
-      - Outer Loop: iterates over `numbers`
-      - ...
-
-    Adjust grouping/formatting logic here to match your exact readability needs.
+    summary.
     """
     from collections import defaultdict
 
@@ -487,3 +429,154 @@ def create_human_readable_summary(input_output_relations: List[Dict[str, str]]) 
                 lines.append(f"  - {r['desc']} ({r['operation']})")
 
     return "\n".join(lines)
+
+
+
+def normalize_data_flow(set_data: Set[str]) -> Set[str]:
+    """
+    Normalize dependency data by:
+      - Lowercasing the string.
+      - Generalizing function calls.
+      - Normalizing control flows (e.g., "func->If" -> "var->If").
+    """
+    normalized = set()
+    for item in set_data:
+        norm = item.lower().strip()
+
+        # Replace function calls (e.g., "math.sqrt" -> "math_op")
+        norm = re.sub(r'\b[a-zA-Z_][a-zA-Z0-9_]*\.(sqrt|log|exp|pow|sin|cos|tan)\b', 'math_op', norm)
+
+        # Normalize control flow (e.g., "function->If" -> "var->If")
+        if '->' in norm:
+            norm = re.sub(r'^[^->]+->', 'var->', norm)
+
+        normalized.add(norm)
+    return normalized
+
+def levenshtein_similarity(str1: str, str2: str) -> float:
+    """
+    Compute Levenshtein similarity between two strings.
+    This ensures we capture **partial** similarity in return statements.
+    """
+    seq = difflib.SequenceMatcher(None, str1, str2)
+    return round(seq.ratio(), 3)
+
+def parse_ast_structure(expression: str) -> str:
+    """
+    Convert an arithmetic expression into an AST-based structural string.
+    Example: "a + b" and "b + a" should be recognized as the same.
+    """
+    try:
+        tree = ast.parse(expression, mode='eval')
+        return ast.dump(tree)
+    except SyntaxError:
+        return expression  # Return raw if parsing fails
+
+def _jaccard_similarity(set_a: Set[str], set_b: Set[str], field_name="Unknown Field") -> float:
+    """
+    Compute Jaccard similarity with accurate penalty scaling.
+    - Uses smoothing to ensure minor changes don't drastically affect similarity.
+    """
+    if not set_a and not set_b:
+        return 1.0  # Perfect match if both are empty
+    if not set_a or not set_b:
+        return 0.0  # No similarity if one is empty
+
+    intersection = set_a & set_b
+    union = set_a | set_b
+    similarity = len(intersection) / len(union)
+
+    return round(similarity, 3)  # Use high precision
+
+def compare_function_similarity(func_info_a: Dict[str, Any], func_info_b: Dict[str, Any]) -> float:
+    """
+    Compute the most **accurate** function similarity score possible by:
+    - Using AST for return values
+    - Using Levenshtein similarity for I/O relations
+    - Weighting similarities for better accuracy
+    """
+    if "dependencies" in func_info_a:
+        func_info_a = func_info_a["dependencies"]
+    if "dependencies" in func_info_b:
+        func_info_b = func_info_b["dependencies"]
+
+    fields_to_compare = [
+        "reads", "writes", "function_calls",
+        "control_flows", "exception_handling", "side_effects",
+        "input_output_relations"
+    ]
+
+    similarities = []
+    field_weights = {
+        "reads": 0.15,
+        "writes": 0.15,
+        "function_calls": 0.20,
+        "control_flows": 0.10,
+        "input_output_relations": 0.20,
+        "returns": 0.20,
+    }
+
+    def serialize_dependencies(dep_list):
+        """
+        Serialize a list of dependencies into a set of JSON strings.
+        Using JSON ensures that the structure of dependency objects is preserved,
+        allowing for more semantically aware comparisons.
+        """
+        serialized_set = set()
+        for dep in dep_list:
+            if isinstance(dep, dict):
+                try:
+                    # Using JSON dumps to preserve structure with sorted keys
+                    serialized = json.dumps(dep, sort_keys=True)
+                except Exception:
+                    serialized = str(dep)
+                serialized_set.add(serialized)
+            elif isinstance(dep, (str, int, float)):
+                serialized_set.add(str(dep))
+        return serialized_set
+
+    for field in fields_to_compare:
+        raw_set_a = serialize_dependencies(func_info_a.get(field, []))
+        raw_set_b = serialize_dependencies(func_info_b.get(field, []))
+
+        set_a = normalize_data_flow(raw_set_a)
+        set_b = normalize_data_flow(raw_set_b)
+
+        if not set_a and not set_b:
+            continue
+
+        similarity = _jaccard_similarity(set_a, set_b, field_name=field)
+        similarities.append(similarity * field_weights.get(field, 0.1))
+
+    # **AST-Based Return Similarity**
+    ret_a = func_info_a.get("returns", [""])[0]
+    ret_b = func_info_b.get("returns", [""])[0]
+    if ret_a and ret_b:
+        ast_a = parse_ast_structure(ret_a)
+        ast_b = parse_ast_structure(ret_b)
+        return_similarity = levenshtein_similarity(ast_a, ast_b)
+    else:
+        return_similarity = 1.0 if not ret_a and not ret_b else 0.0
+
+    similarities.append(return_similarity * field_weights["returns"])
+
+    # **Levenshtein Input-Output Relation Similarity**
+    def relation_strings(rel_list):
+        generalized_relations = set()
+        for rel in rel_list:
+            desc = rel.get('desc', '').lower()
+            desc = re.sub(r'\bmath\.(sqrt|log|exp|pow|sin|cos|tan)\b', 'math_op', desc)
+            desc = re.sub(r'\b(total|sum|result|count|accumulator)\b', 'var_result', desc)
+            desc = re.sub(r'^[a-zA-Z_]+->', 'var->', desc)
+            generalized_relations.add(f"{rel.get('operation', '')}::{desc}")
+        return generalized_relations
+
+    ior_a = normalize_data_flow(relation_strings(func_info_a.get("input_output_relations", [])))
+    ior_b = normalize_data_flow(relation_strings(func_info_b.get("input_output_relations", [])))
+
+    if ior_a or ior_b:
+        ior_similarity = levenshtein_similarity(str(ior_a), str(ior_b))
+        similarities.append(ior_similarity * field_weights["input_output_relations"])
+
+    final_score = sum(similarities) / sum(field_weights.values())
+    return final_score

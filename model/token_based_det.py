@@ -47,42 +47,64 @@ class TokenBasedCloneDetector:
         return function_bodies
 
     @staticmethod
-    def detect_token_clones_with_ast(file_path: str, similarity_threshold: float = 0.8) -> List[Dict[str, float]]:
+    def detect_token_clones_with_ast(file_path: str, similarity_threshold: float = 0.8) -> List[Dict[str, any]]:
         """
         Detects token-based clones in a Python file while also utilizing AST-based structure analysis.
+
         """
+
+        # Step 1: Read the source code from the provided file path
         with open(file_path, "r", encoding="utf-8") as f:
             source_code = f.read()
 
+        # Step 2: Parse the source code into an Abstract Syntax Tree (AST)
         tree = ast.parse(source_code)
-        functions = TokenBasedCloneDetector.extract_function_bodies(tree, source_code)
-        function_tokens = {func_name: TokenBasedCloneDetector.tokenize_code(code) for func_name, code in
-                           functions.items()}
 
+        # Step 3: Extract function bodies from the AST
+        functions = TokenBasedCloneDetector.extract_function_bodies(tree, source_code)
+
+        # Step 4: Tokenize function bodies for token-based similarity comparison
+        function_tokens = {
+            func_name: TokenBasedCloneDetector.tokenize_code(code)
+            for func_name, code in functions.items()
+        }
+
+        # Step 5: Initialize list to store detected function clones
         clones = []
+
+        # Step 6: Create a list of function names for pairwise comparison
         function_names = list(function_tokens.keys())
 
+        # Step 7: Compare each function with every other function (pairwise comparison)
         for i in range(len(function_names)):
-            for j in range(i + 1, len(function_names)):
+            for j in range(i + 1, len(function_names)):  # Avoid duplicate comparisons
+
                 func1, func2 = function_names[i], function_names[j]
                 tokens1, tokens2 = function_tokens[func1], function_tokens[func2]
 
+                # Step 8: Compute token similarity between the two functions
                 token_similarity = TokenBasedCloneDetector.compute_token_similarity(tokens1, tokens2)
 
-                # Updated: Extract the FunctionDef node from the parsed code before calculating AST similarity
+                # Step 9: Extract AST structures before calculating AST-based similarity
                 try:
-                    func1_ast = ast.parse(functions[func1]).body[0]
-                    func2_ast = ast.parse(functions[func2]).body[0]
-                    ast_similarity = calculate_similarity(func1_ast, func2_ast)  # Use static analyzer's AST similarity
+                    func1_ast = ast.parse(functions[func1]).body[0]  # Parse AST for first function
+                    func2_ast = ast.parse(functions[func2]).body[0]  # Parse AST for second function
+                    ast_similarity = calculate_similarity(func1_ast, func2_ast)  # Compute AST similarity
                 except Exception as e:
-                    ast_similarity = 0.0
+                    ast_similarity = 0.0  # Set AST similarity to 0 if parsing fails
 
+                # Debug output for developers to track function comparisons
+
+                # Step 10: Store clone information if similarity meets the threshold
                 if token_similarity >= similarity_threshold or ast_similarity >= similarity_threshold:
                     clones.append({
                         "func1": func1,
                         "func2": func2,
                         "token_similarity": token_similarity,
-                        "ast_similarity": ast_similarity
+                        "ast_similarity": ast_similarity,
+                        "func1_code": functions[func1],  # Store source code of function 1
+                        "func2_code": functions[func2],  # Store source code of function 2
                     })
 
+        # Step 11: Return the list of detected function clones
         return clones

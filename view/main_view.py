@@ -1,15 +1,14 @@
-import traceback
-
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout,
     QGridLayout, QFileDialog, QMessageBox, QTabWidget, QSlider, QLineEdit,
-    QProgressBar
+    QProgressBar, QStyleFactory, QScrollArea, QFrame
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
 
 # Assuming these tab classes are available and have been converted to PyQt5.
 # They should expose similar update_* methods as in your original code.
-from view.tabs import SummaryTab, StaticTab, CloneTab, RuntimeTab, DataFlowTab
+from view.tabs_view import SummaryTab, StaticTab, CloneTab, RuntimeTab, DataFlowTab
 
 
 class ApplicationView(QMainWindow):
@@ -25,31 +24,34 @@ class ApplicationView(QMainWindow):
         self.analysis_results = {}
 
         self.initUI()
+        self.apply_modern_style()
 
     def initUI(self):
         self.setWindowTitle("Code Similarity Analyzer")
-        self.resize(1100, 800)
+        self.resize(1200, 1000)
 
-        # Central widget and layout
+        # Create a scroll area that will allow the content to be scrolled if it's too long.
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        self.setCentralWidget(scroll_area)
+
+        # Create a central widget and assign it to the scroll area.
         central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+        scroll_area.setWidget(central_widget)
+
         main_layout = QVBoxLayout(central_widget)
 
-        # Header controls (file selection, threshold, test cases, progress bar, buttons)
         self.create_header_widgets(main_layout)
 
-        # Notebook (Tab widget)
         self.notebook = QTabWidget()
         main_layout.addWidget(self.notebook)
 
-        # Instantiate tab classes
         self.summary_tab = SummaryTab()
         self.static_tab = StaticTab()
         self.clone_tab = CloneTab()
         self.runtime_tab = RuntimeTab()
         self.dataflow_tab = DataFlowTab()
 
-        # Add tabs to the QTabWidget
         self.notebook.addTab(self.summary_tab, "Summary")
         self.notebook.addTab(self.static_tab, "Static Analysis")
         self.notebook.addTab(self.clone_tab, "Similarity")
@@ -60,12 +62,10 @@ class ApplicationView(QMainWindow):
         header_widget = QWidget()
         header_layout = QGridLayout(header_widget)
 
-        # Row 0: Header label
-        header_label = QLabel("Select a Python File or Folder:")
-        header_label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        header_layout.addWidget(header_label, 0, 0, 1, 3)
+        header_label = QLabel("Code Similarity Analysis Tool")
+        header_label.setStyleSheet("font-size: 22px; font-weight: 600; color: #3498db;")
+        header_layout.addWidget(header_label, 0, 0, 1, 4)
 
-        # Row 1: File and folder buttons
         btn_browse_file = QPushButton("Browse File")
         btn_browse_file.clicked.connect(self.browse_file)
         header_layout.addWidget(btn_browse_file, 1, 0)
@@ -74,12 +74,10 @@ class ApplicationView(QMainWindow):
         btn_browse_folder.clicked.connect(self.browse_folder)
         header_layout.addWidget(btn_browse_folder, 1, 1)
 
-        # Row 2: Threshold label, slider, and display
-        threshold_label = QLabel("Threshold:")
-        threshold_label.setStyleSheet("font-size: 12px;")
+        threshold_label = QLabel("Similarity Threshold:")
+        threshold_label.setStyleSheet("font-size: 14px; font-weight: 500;")
         header_layout.addWidget(threshold_label, 2, 0)
 
-        # Using QSlider with range 50 to 100 to represent 0.5 to 1.0
         self.threshold_slider = QSlider(Qt.Horizontal)
         self.threshold_slider.setMinimum(50)
         self.threshold_slider.setMaximum(100)
@@ -91,29 +89,26 @@ class ApplicationView(QMainWindow):
         self.threshold_value_label = QLabel(f"{self.threshold_value:.2f}")
         header_layout.addWidget(self.threshold_value_label, 2, 2)
 
-        # Row 3: Test Cases label and entry
-        test_cases_label = QLabel("Test Cases:")
-        test_cases_label.setStyleSheet("font-size: 12px;")
+        test_cases_label = QLabel("Number of Tests:")
+        test_cases_label.setStyleSheet("font-size: 14px; font-weight: 500;")
         header_layout.addWidget(test_cases_label, 3, 0)
 
         self.test_cases_entry = QLineEdit()
-        self.test_cases_entry.setFixedWidth(50)
+        self.test_cases_entry.setFixedWidth(60)
         self.test_cases_entry.setText("10")
         header_layout.addWidget(self.test_cases_entry, 3, 1)
 
-        # Row 4: Progress bar (initially hidden)
         self.progress = QProgressBar()
         self.progress.setMinimum(0)
-        self.progress.setMaximum(0)  # 0/0 range gives an indeterminate look
+        self.progress.setMaximum(0)
         self.progress.setVisible(False)
-        header_layout.addWidget(self.progress, 4, 0, 1, 3)
+        header_layout.addWidget(self.progress, 4, 0, 1, 4)
 
-        # Row 5: Action buttons
         btn_start = QPushButton("Start Analysis")
         btn_start.clicked.connect(self.on_start_analysis)
         header_layout.addWidget(btn_start, 5, 0)
 
-        btn_restart = QPushButton("Restart")
+        btn_restart = QPushButton("Reset")
         btn_restart.clicked.connect(self.on_restart)
         header_layout.addWidget(btn_restart, 5, 1)
 
@@ -122,6 +117,130 @@ class ApplicationView(QMainWindow):
         header_layout.addWidget(btn_export, 5, 2)
 
         layout.addWidget(header_widget)
+
+    def apply_modern_style(self):
+        QApplication.setStyle(QStyleFactory.create("Fusion"))
+
+        # Modern grey palette with blue accent
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor("#e0e0e0"))           # Light grey background
+        palette.setColor(QPalette.WindowText, QColor("#2e2e2e"))         # Dark grey text
+        palette.setColor(QPalette.Base, QColor("#ffffff"))               # White for text entry background
+        palette.setColor(QPalette.AlternateBase, QColor("#e0e0e0"))
+        palette.setColor(QPalette.ToolTipBase, QColor("#ffffff"))
+        palette.setColor(QPalette.ToolTipText, QColor("#2e2e2e"))
+        palette.setColor(QPalette.Text, QColor("#2e2e2e"))
+        palette.setColor(QPalette.Button, QColor("#d0d0d0"))             # Medium grey buttons
+        palette.setColor(QPalette.ButtonText, QColor("#2e2e2e"))
+        palette.setColor(QPalette.BrightText, QColor("#ff0000"))
+        palette.setColor(QPalette.Link, QColor("#3498db"))
+        palette.setColor(QPalette.Highlight, QColor("#3498db"))
+        palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))
+        QApplication.instance().setPalette(palette)
+
+        # Set a modern system font
+        font = QFont("Segoe UI", 10)
+        QApplication.instance().setFont(font)
+
+        # Update QPushButton style with a flat modern look and blue accent
+        for btn in self.findChildren(QPushButton):
+            btn.setStyleSheet(
+                """
+                QPushButton {
+                    background-color: #3498db;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    font-size: 14px;
+                }
+                QPushButton:hover {
+                    background-color: #2980b9;
+                }
+                QPushButton:pressed {
+                    background-color: #2471a3;
+                }
+                """
+            )
+
+        # Update QLineEdit style with a clean white background
+        self.test_cases_entry.setStyleSheet(
+            """
+            QLineEdit {
+                background-color: #ffffff;
+                color: #2e2e2e;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QLineEdit:focus {
+                border: 1px solid #3498db;
+            }
+            """
+        )
+
+        # Update QSlider style with a clean, flat design using lighter greys
+        self.threshold_slider.setStyleSheet(
+            """
+            QSlider::groove:horizontal {
+                border: 1px solid #aaa;
+                height: 8px;
+                background: #ccc;
+                margin: 2px 0;
+                border-radius: 4px;
+            }
+            QSlider::handle:horizontal {
+                background: #3498db;
+                border: 1px solid #3498db;
+                width: 18px;
+                margin: -5px 0;
+                border-radius: 9px;
+            }
+            """
+        )
+
+        # Update QProgressBar style with soft grey tones
+        self.progress.setStyleSheet(
+            """
+            QProgressBar {
+                border: 2px solid #ccc;
+                border-radius: 5px;
+                text-align: center;
+                background-color: #f0f0f0;
+                color: #2e2e2e;
+            }
+            QProgressBar::chunk {
+                background-color: #3498db;
+                width: 20px;
+                border-radius: 5px;
+            }
+            """
+        )
+
+        # Update QTabWidget style for a modern grey look with blue accent on hover/selected
+        self.notebook.setStyleSheet(
+            """
+            QTabBar::tab {
+                background: #d0d0d0;
+                color: #2e2e2e;
+                border: 1px solid #aaa;
+                border-bottom: none;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                padding: 8px 16px;
+                margin-right: 2px;
+            }
+            QTabBar::tab:selected, QTabBar::tab:hover {
+                background: #3498db;
+                color: white;
+            }
+            QTabWidget::pane {
+                border: 1px solid #aaa;
+                top: -1px;
+                background: #f0f0f0;
+            }
+            """
+        )
 
     def update_threshold_label(self, value):
         # Convert slider value (50-100) back to a float (0.5-1.0)
@@ -149,19 +268,11 @@ class ApplicationView(QMainWindow):
             QMessageBox.critical(self, "Error", "No file or folder selected!")
             return
 
-        # Debug: Check the state of the file/folder paths
-        print("[DEBUG] File Path:", self.file_path)
-        print("[DEBUG] Folder Path:", self.folder_path)
-
         try:
             threshold = self.threshold_slider.value() / 100.0
 
             # Get and clean the input for test cases
             num_tests_text = self.test_cases_entry.text().strip()
-
-            # Debug: Display the raw and cleaned input
-            print("[DEBUG] Raw Input for Test Cases:", self.test_cases_entry.text())
-            print("[DEBUG] Cleaned Input for Test Cases:", num_tests_text)
 
             # Enhanced validation for positive integer
             if not num_tests_text.isdigit():
@@ -175,25 +286,12 @@ class ApplicationView(QMainWindow):
 
             analysis_path = self.file_path if self.file_path else self.folder_path
 
-            # Debug: Confirm analysis path and parameters
-            print("[DEBUG] Analysis Path:", analysis_path)
-            print("[DEBUG] Threshold:", threshold)
-            print("[DEBUG] Number of Test Cases:", num_tests)
-
             # Show progress bar during analysis
             self.progress.setVisible(True)
             QApplication.processEvents()  # Force update of UI
 
             # Call the controller's analysis method
-            print("[DEBUG] Calling start_analysis() with:")
-            print("        - Analysis Path:", analysis_path)
-            print("        - Threshold:", threshold)
-            print("        - Number of Test Cases:", num_tests)
-
-            # Call the controller's analysis method
             results = self.controller.start_analysis(analysis_path, threshold, num_tests)
-
-            print("[DEBUG] start_analysis() Returned:", results)
 
             self.analysis_results = results
 
@@ -213,15 +311,9 @@ class ApplicationView(QMainWindow):
             self.summary_tab.show_refactoring_suggestions(insights.get("refactoring_suggestions", []))
 
         except ValueError as ve:
-            # Display the specific value error message along with the traceback
-            print("[ERROR] Value Error:", ve)
-            traceback.print_exc()
             QMessageBox.critical(self, "Input Error", str(ve))
 
         except Exception as e:
-            # Display any other unexpected errors with full traceback
-            print("[ERROR] Unexpected Exception:", e)
-            traceback.print_exc()
             QMessageBox.critical(self, "Analysis Error", str(e))
 
         finally:
@@ -275,7 +367,13 @@ class ApplicationView(QMainWindow):
             QMessageBox.critical(self, "Export Error", str(e))
 
     def start(self):
-            self.show()
+        self.show()
 
 
-
+if __name__ == "__main__":
+    import sys
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')  # Use Fusion style for a modern look
+    view = ApplicationView(controller=None)  # Replace with your actual controller
+    view.start()
+    sys.exit(app.exec_())
