@@ -1,14 +1,40 @@
+import importlib
+import os
+import sys
+
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout,
     QGridLayout, QFileDialog, QMessageBox, QTabWidget, QSlider, QLineEdit,
-    QProgressBar, QStyleFactory, QScrollArea, QFrame
+    QProgressBar, QStyleFactory, QScrollArea, QFrame, QTreeWidgetItem
 )
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QPalette, QColor
 
-# Assuming these tab classes are available and have been converted to PyQt5.
-# They should expose similar update_* methods as in your original code.
-from view.tabs_view import SummaryTab, StaticTab, CloneTab, RuntimeTab, DataFlowTab
+# Import the other tab classes from tabs_view
+from view.tabs_view import (
+    SummaryTab,
+    StaticTab,
+    CloneTab,
+    RuntimeTab,
+    DataFlowTab,
+    RefactorTab  # <-- Import RefactorTab here
+)
+
+from PyQt5.QtWidgets import QTreeWidget, QHBoxLayout
+
+from controller.code_analysis_controller import CodeAnalysisController
+
+
+def import_user_script(file_path):
+    """
+    Dynamically imports a user-selected Python file as a module.
+    """
+    module_name = os.path.splitext(os.path.basename(file_path))[0]
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    user_module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = user_module
+    spec.loader.exec_module(user_module)
+    return user_module
 
 
 class ApplicationView(QMainWindow):
@@ -20,7 +46,7 @@ class ApplicationView(QMainWindow):
 
         self.file_path = None
         self.folder_path = None
-        self.threshold_value = 0.8
+        self.threshold_value = 0.8  # Default threshold
         self.analysis_results = {}
 
         self.initUI()
@@ -30,12 +56,12 @@ class ApplicationView(QMainWindow):
         self.setWindowTitle("Code Similarity Analyzer")
         self.resize(1200, 1000)
 
-        # Create a scroll area that will allow the content to be scrolled if it's too long.
+        # Create a scroll area that will allow the content to be scrolled if it's too long
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         self.setCentralWidget(scroll_area)
 
-        # Create a central widget and assign it to the scroll area.
+        # Create a central widget and assign it to the scroll area
         central_widget = QWidget()
         scroll_area.setWidget(central_widget)
 
@@ -46,17 +72,23 @@ class ApplicationView(QMainWindow):
         self.notebook = QTabWidget()
         main_layout.addWidget(self.notebook)
 
+        # Create each tab
         self.summary_tab = SummaryTab()
         self.static_tab = StaticTab()
         self.clone_tab = CloneTab()
         self.runtime_tab = RuntimeTab()
         self.dataflow_tab = DataFlowTab()
 
+        # Use the RefactorTab from tabs_view.py
+        self.refactor_tab = RefactorTab()
+
+        # Add them to the QTabWidget
         self.notebook.addTab(self.summary_tab, "Summary")
         self.notebook.addTab(self.static_tab, "Static Analysis")
         self.notebook.addTab(self.clone_tab, "Similarity")
         self.notebook.addTab(self.runtime_tab, "Runtime")
         self.notebook.addTab(self.dataflow_tab, "Data Flow")
+        self.notebook.addTab(self.refactor_tab, "Refactor")
 
     def create_header_widgets(self, layout):
         header_widget = QWidget()
@@ -123,14 +155,14 @@ class ApplicationView(QMainWindow):
 
         # Modern grey palette with blue accent
         palette = QPalette()
-        palette.setColor(QPalette.Window, QColor("#e0e0e0"))           # Light grey background
-        palette.setColor(QPalette.WindowText, QColor("#2e2e2e"))         # Dark grey text
-        palette.setColor(QPalette.Base, QColor("#ffffff"))               # White for text entry background
+        palette.setColor(QPalette.Window, QColor("#e0e0e0"))    # Light grey background
+        palette.setColor(QPalette.WindowText, QColor("#2e2e2e"))
+        palette.setColor(QPalette.Base, QColor("#ffffff"))
         palette.setColor(QPalette.AlternateBase, QColor("#e0e0e0"))
         palette.setColor(QPalette.ToolTipBase, QColor("#ffffff"))
         palette.setColor(QPalette.ToolTipText, QColor("#2e2e2e"))
         palette.setColor(QPalette.Text, QColor("#2e2e2e"))
-        palette.setColor(QPalette.Button, QColor("#d0d0d0"))             # Medium grey buttons
+        palette.setColor(QPalette.Button, QColor("#d0d0d0"))
         palette.setColor(QPalette.ButtonText, QColor("#2e2e2e"))
         palette.setColor(QPalette.BrightText, QColor("#ff0000"))
         palette.setColor(QPalette.Link, QColor("#3498db"))
@@ -163,7 +195,7 @@ class ApplicationView(QMainWindow):
                 """
             )
 
-        # Update QLineEdit style with a clean white background
+        # Update QLineEdit style
         self.test_cases_entry.setStyleSheet(
             """
             QLineEdit {
@@ -179,7 +211,7 @@ class ApplicationView(QMainWindow):
             """
         )
 
-        # Update QSlider style with a clean, flat design using lighter greys
+        # Update QSlider style
         self.threshold_slider.setStyleSheet(
             """
             QSlider::groove:horizontal {
@@ -199,7 +231,7 @@ class ApplicationView(QMainWindow):
             """
         )
 
-        # Update QProgressBar style with soft grey tones
+        # Update QProgressBar style
         self.progress.setStyleSheet(
             """
             QProgressBar {
@@ -217,7 +249,7 @@ class ApplicationView(QMainWindow):
             """
         )
 
-        # Update QTabWidget style for a modern grey look with blue accent on hover/selected
+        # Update QTabWidget style
         self.notebook.setStyleSheet(
             """
             QTabBar::tab {
@@ -243,7 +275,7 @@ class ApplicationView(QMainWindow):
         )
 
     def update_threshold_label(self, value):
-        # Convert slider value (50-100) back to a float (0.5-1.0)
+        # Convert slider value (50-100) back to a float (0.50-1.0)
         threshold = value / 100.0
         self.threshold_value_label.setText(f"{threshold:.2f}")
 
@@ -271,34 +303,30 @@ class ApplicationView(QMainWindow):
         try:
             threshold = self.threshold_slider.value() / 100.0
 
-            # Get and clean the input for test cases
             num_tests_text = self.test_cases_entry.text().strip()
-
-            # Enhanced validation for positive integer
             if not num_tests_text.isdigit():
                 raise ValueError("Test cases input is not a valid positive integer.")
-
             num_tests = int(num_tests_text)
-
-            # Check if the number is positive
             if num_tests <= 0:
-                raise ValueError("Number of test cases must be greater than 0.")
+                raise ValueError("Number of tests must be > 0.")
 
             analysis_path = self.file_path if self.file_path else self.folder_path
 
-            # Show progress bar during analysis
+            # Dynamically import the single file if chosen
+            if self.file_path:
+                import_user_script(self.file_path)
+
+            # Show progress bar
             self.progress.setVisible(True)
-            QApplication.processEvents()  # Force update of UI
+            QApplication.processEvents()
 
-            # Call the controller's analysis method
+            # Run analysis
             results = self.controller.start_analysis(analysis_path, threshold, num_tests)
-
             self.analysis_results = results
 
-            # Update each tab with its corresponding results
-            self.summary_tab.update_summary(results)
+            # Update tabs
             self.static_tab.update_static(results.get("static", []))
-            self.clone_tab.update_clone(results.get("token_clones", []))
+            self.clone_tab.update_clone(results.get("merged_clones", []))
             self.runtime_tab.update_runtime(results.get("runtime", {}))
             self.dataflow_tab.update_dataflow(results.get("data_flow", {}))
 
@@ -310,12 +338,15 @@ class ApplicationView(QMainWindow):
             self.summary_tab.show_duplicate_pairs(insights.get("top_duplicate_pairs", []))
             self.summary_tab.show_refactoring_suggestions(insights.get("refactoring_suggestions", []))
 
+            # Also update the new RefactorTab with advanced suggestions
+            # new code
+            refactor_plans = results.get("refactoring_plans", [])
+            self.refactor_tab.update_refactor_plans(refactor_plans)
+
         except ValueError as ve:
             QMessageBox.critical(self, "Input Error", str(ve))
-
         except Exception as e:
             QMessageBox.critical(self, "Analysis Error", str(e))
-
         finally:
             self.progress.setVisible(False)
 
@@ -326,12 +357,17 @@ class ApplicationView(QMainWindow):
         self.threshold_slider.setValue(80)
         self.threshold_value_label.setText(f"{0.8:.2f}")
 
-        # Clear all tab data (assuming each tab has an update method to clear its content)
+        # Clear all tab data
         self.static_tab.update_static([])
         self.clone_tab.update_clone([])
         self.runtime_tab.update_runtime({})
         self.dataflow_tab.update_dataflow({})
-        self.summary_tab.update_summary({})
+        self.summary_tab.update_key_metrics({})
+        self.summary_tab.show_top_complex_functions([])
+        self.summary_tab.show_slowest_functions([])
+        self.summary_tab.show_duplicate_pairs([])
+        self.summary_tab.show_refactoring_suggestions([])
+        self.refactor_tab.update_refactor_suggestions([])
 
         QMessageBox.information(self, "Reset", "Application reset. Please select a new file/folder to analyze.")
 
@@ -344,7 +380,7 @@ class ApplicationView(QMainWindow):
 
         try:
             lines = ["=== Summary ==="]
-            # Assuming summary_tab has a dictionary of QLabel objects named summary_labels
+            # Example: summary_tab has a dictionary of QLabel objects named summary_labels
             if hasattr(self.summary_tab, 'summary_labels'):
                 for lbl in self.summary_tab.summary_labels.values():
                     lines.append(lbl.text())
@@ -358,7 +394,8 @@ class ApplicationView(QMainWindow):
                     values = [item.text(col) for col in range(item.columnCount())]
                     lines.append(" | ".join(values))
 
-            # Continue for other tabs as needed...
+            # Add more exports from other tabs as desired...
+
             report = "\n".join(lines)
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(report)
@@ -371,9 +408,9 @@ class ApplicationView(QMainWindow):
 
 
 if __name__ == "__main__":
-    import sys
     app = QApplication(sys.argv)
     app.setStyle('Fusion')  # Use Fusion style for a modern look
-    view = ApplicationView(controller=None)  # Replace with your actual controller
+    controller = CodeAnalysisController()
+    view = ApplicationView(controller)
     view.start()
     sys.exit(app.exec_())
