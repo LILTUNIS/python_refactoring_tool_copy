@@ -1,16 +1,12 @@
-import json
-import logging
 import re
+from typing import List
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton,
-    QTextEdit, QGroupBox, QTreeWidget, QTreeWidgetItem, QApplication, QTabWidget
+    QWidget, QGridLayout, QLabel, QGroupBox, QLineEdit
 )
-from PyQt5.QtGui import QTextCursor
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from model.rope_refactor_engine import RopeRefactorEngine
 
 
 def denormalize_text(text: str, reverse_mapping: dict) -> str:
@@ -258,20 +254,32 @@ class StaticTab(QWidget):
 
 # --- In your CloneTab class ---
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QApplication, QHeaderView
+    QWidget
 )
-from PyQt5.QtCore import Qt
+
 
 class CloneTab(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.clone_tree = None
+        self.search_box = None
+        self.all_clone_results = []  # Store all clone results for filtering
         self.initUI()
 
     def initUI(self):
         layout = QVBoxLayout(self)
 
-        # Updated columns to include "Static Sim"
+        # Search Label
+        search_label = QLabel("🔍 Search Function Pairs:")
+        layout.addWidget(search_label)
+
+        # Search Box
+        self.search_box = QLineEdit()
+        self.search_box.setPlaceholderText("Enter function name to search...")
+        self.search_box.textChanged.connect(self.filter_clone_results)
+        layout.addWidget(self.search_box)
+
+        # Clone Tree Table
         self.columns = (
             "Pair",
             "Token Sim",
@@ -299,9 +307,7 @@ class CloneTab(QWidget):
         self.clone_tree.setColumnCount(len(self.columns))
         self.clone_tree.setHeaderLabels(self.heads)
         self.clone_tree.setAlternatingRowColors(True)
-        self.clone_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.clone_tree.setSortingEnabled(True)
-
         layout.addWidget(self.clone_tree)
 
     def update_clone(self, clone_results):
@@ -310,6 +316,7 @@ class CloneTab(QWidget):
         which now includes 'static_similarity'.
         """
         self.clone_tree.clear()
+        self.all_clone_results = clone_results  # Store all results for filtering
 
         if not clone_results:
             print("DEBUG: No clone results found.")
@@ -329,18 +336,7 @@ class CloneTab(QWidget):
             rt_sim    = res.get("runtime_similarity", 0.0)
             static_sim = res.get("static_similarity", 0.0)
 
-            # (Optional) If you want to compute a new overall with static included:
-            # overall = (token_sim + ast_sim + df_sim + rt_sim + static_sim) / 5
-            # Or keep your existing approach.
-
             overall_str = "N/A"
-            # If you already compute an "Overall Similarity" somewhere else, read it here
-            # overall = res.get("new_overall", None)
-            # if overall is not None:
-            #     overall_str = f"{overall:.2f}"
-
-            # For demonstration, let's do a naive average:
-            # (You can refine weighting as you like)
             if None not in (token_sim, ast_sim, df_sim, rt_sim, static_sim):
                 naive_avg = (token_sim + ast_sim + df_sim + rt_sim + static_sim) / 5
                 overall_str = f"{naive_avg:.2f}"
@@ -350,7 +346,6 @@ class CloneTab(QWidget):
             exact_clone = "Yes" if abs(type1_sim - 1.0) < 1e-9 else "No"
 
             refactoring_suggestion = "N/A"
-            # (Optional) You can fill in actual suggestions if your code provides them.
 
             row_item = QTreeWidgetItem([
                 pair,
@@ -365,15 +360,55 @@ class CloneTab(QWidget):
             ])
             self.clone_tree.addTopLevelItem(row_item)
 
-        # Resize columns to fit contents
-        for col in range(self.clone_tree.columnCount()):
-            self.clone_tree.resizeColumnToContents(col)
+        self.clone_tree.resizeColumnToContents(0)
 
-        QApplication.processEvents()
+    def filter_clone_results(self):
+        """
+        Filters the displayed function pairs based on search input.
+        """
+        search_text = self.search_box.text().strip().lower()
+        self.clone_tree.clear()
 
+        for res in self.all_clone_results:
+            f1 = res.get("func1", "").strip().lower()
+            f2 = res.get("func2", "").strip().lower()
+            pair = f"{f1} & {f2}"
+
+            # Show only results that match search text
+            if search_text in f1 or search_text in f2 or search_text in pair:
+                token_sim = res.get("token_similarity", 0.0)
+                ast_sim   = res.get("ast_similarity", 0.0)
+                df_sim    = res.get("dataflow_similarity", 0.0)
+                rt_sim    = res.get("runtime_similarity", 0.0)
+                static_sim = res.get("static_similarity", 0.0)
+
+                overall_str = "N/A"
+                if None not in (token_sim, ast_sim, df_sim, rt_sim, static_sim):
+                    naive_avg = (token_sim + ast_sim + df_sim + rt_sim + static_sim) / 5
+                    overall_str = f"{naive_avg:.2f}"
+
+                type1_sim = res.get("type1_similarity", 0.0)
+                exact_clone = "Yes" if abs(type1_sim - 1.0) < 1e-9 else "No"
+
+                refactoring_suggestion = "N/A"
+
+                row_item = QTreeWidgetItem([
+                    pair,
+                    f"{token_sim:.2f}",
+                    f"{ast_sim:.2f}",
+                    f"{df_sim:.2f}",
+                    f"{rt_sim:.2f}",
+                    f"{static_sim:.2f}",
+                    overall_str,
+                    exact_clone,
+                    refactoring_suggestion
+                ])
+                self.clone_tree.addTopLevelItem(row_item)
+
+        self.clone_tree.resizeColumnToContents(0)
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QHeaderView, QTabWidget, QScrollArea
+    QWidget, QTabWidget
 )
 from PyQt5.QtCore import Qt
 
@@ -511,7 +546,7 @@ class RuntimeTab(QWidget):
 
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QHeaderView
+    QWidget
 )
 # ... rest of your imports
 
@@ -594,29 +629,52 @@ class DataFlowTab(QWidget):
                         io_item.addChild(relation_item)
 
         self.dataflow_tree.expandAll()  # auto-expand all items
+
+
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem,
-    QPushButton, QHBoxLayout, QHeaderView, QMessageBox
+    QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QHeaderView,
+    QPushButton, QHBoxLayout, QMessageBox, QDialog, QVBoxLayout as QVLayout,
+    QTextEdit
+)
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QHeaderView,
+    QPushButton, QHBoxLayout, QMessageBox, QDialog, QTextEdit
 )
 from PyQt5.QtCore import Qt
 
-# tabs_view.py (RefactorTab class)
 
+# REMOVE these direct imports:
+# from model.refactoring_planner import RefactoringPlan
+# from model.rope_refactor_engine import RopeRefactorEngine
 
+# INSTEAD, rely on the controller
+# from controller.code_analysis_controller import CodeAnalysisController
 
 
 class RefactorTab(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, controller=None):
+        """
+        :param parent: parent QWidget
+        :param controller: an instance of CodeAnalysisController
+                           (so this tab can call controller.apply_refactoring)
+        """
         super().__init__(parent)
+        self.controller = controller
         self.refactor_tree = None
+        self.preview_button = None
         self.apply_button = None
-        self.engine = None  # We'll init RopeRefactorEngine later
+
+        # We'll store the actual plan objects (or dictionaries) in the tree's UserRole
         self.initUI()
+
+    def set_controller(self, controller):
+        """Allows the main application to inject the CodeAnalysisController after creation."""
+        self.controller = controller
 
     def initUI(self):
         main_layout = QVBoxLayout(self)
 
-        # QTreeWidget: (checkbox) plan_type, file_path, lines, extra
+        # Create a QTreeWidget to list refactoring plans
         self.refactor_tree = QTreeWidget()
         self.refactor_tree.setColumnCount(4)
         self.refactor_tree.setHeaderLabels(["Select", "Plan Type", "Location", "Details"])
@@ -632,26 +690,25 @@ class RefactorTab(QWidget):
 
         main_layout.addWidget(self.refactor_tree)
 
-        # "Apply Refactor" button
+        # Buttons: "Preview" and "Apply"
         button_layout = QHBoxLayout()
+        self.preview_button = QPushButton("Preview")
+        self.preview_button.clicked.connect(self.on_preview_changes)
+        button_layout.addWidget(self.preview_button)
+
         self.apply_button = QPushButton("Apply Refactor")
         self.apply_button.clicked.connect(self.on_apply_refactor)
         button_layout.addWidget(self.apply_button)
+
         main_layout.addLayout(button_layout)
-
         self.setLayout(main_layout)
-
-    def set_project_path(self, project_path: str):
-        """
-        Optionally call this if you want to init the RopeRefactorEngine
-        once the user chooses a folder.
-        """
-        self.engine = RopeRefactorEngine(project_path)
 
     def update_refactor_plans(self, plans):
         """
-        Display a list of RefactoringPlan objects in the tree.
-        Each plan has plan_type, file_path, start_line, end_line, etc.
+        Display a list of refactoring plans (could be objects or dictionaries).
+        The GUI doesn't need to know about RefactoringPlan or RopeRefactorEngine.
+
+        :param plans: A list of plan objects/dicts from the controller.
         """
         self.refactor_tree.clear()
 
@@ -661,36 +718,96 @@ class RefactorTab(QWidget):
             return
 
         for plan in plans:
-            # E.g. "extract_method" => line range => new_func_name
-            plan_type = plan.plan_type
-            location_str = f"{plan.file_path}:{plan.start_line}-{plan.end_line}"
-            extra = plan.extra_info.get("suggested_text", "")
+            # We'll assume each plan has these attributes/keys:
+            #   plan.plan_type
+            #   plan.file_path
+            #   plan.start_line
+            #   plan.end_line
+            #   plan.extra_info["suggested_text"]
+            plan_type = getattr(plan, "plan_type", None) or plan.get("plan_type", "N/A")
+            file_path = getattr(plan, "file_path", None) or plan.get("file_path", "")
+            start_line = getattr(plan, "start_line", None) or plan.get("start_line", 0)
+            end_line = getattr(plan, "end_line", None) or plan.get("end_line", 0)
+            location_str = f"{file_path}:{start_line}-{end_line}"
 
-            row_item = QTreeWidgetItem(["", plan_type, location_str, extra])
+            extra_info = getattr(plan, "extra_info", None) or plan.get("extra_info", {})
+            details = extra_info.get("suggested_text", "")
+
+            row_item = QTreeWidgetItem(["", plan_type, location_str, details])
             row_item.setCheckState(0, Qt.Unchecked)
-            # store the plan object so we can retrieve it on "Apply"
+
+            # Store the entire plan object in the tree item for later retrieval
             row_item.setData(0, Qt.UserRole, plan)
             self.refactor_tree.addTopLevelItem(row_item)
 
-    def on_apply_refactor(self):
+    def on_preview_changes(self):
         """
-        Gather checked items => call RopeRefactorEngine
+        (Optional) Show a preview of selected refactoring changes.
+        If your controller has a method like `preview_refactor_plan(plan)`,
+        you can call it here. Otherwise, you can remove or adapt this method.
         """
-        if not self.engine:
-            QMessageBox.warning(self, "No Engine", "RopeRefactorEngine not initialized.")
-            return
-
-        checked_plans = []
-        for i in range(self.refactor_tree.topLevelItemCount()):
-            item = self.refactor_tree.topLevelItem(i)
-            if item.checkState(0) == Qt.Checked:
-                plan = item.data(0, Qt.UserRole)  # Retrieve the stored plan
-                checked_plans.append(plan)
-
+        checked_plans = self._get_checked_plans()
         if not checked_plans:
             QMessageBox.information(self, "No Selection", "No refactoring plans selected.")
             return
 
-        # Apply them
-        self.engine.apply_plans(checked_plans)
+        if not self.controller:
+            QMessageBox.warning(self, "No Controller", "No CodeAnalysisController is set.")
+            return
+
+        # For demo, preview the FIRST selected plan
+        plan = checked_plans[0]
+
+        # If your controller supports a "preview" method, call it:
+        if hasattr(self.controller, "preview_refactor_plan"):
+            diff_text = self.controller.preview_refactor_plan(plan)
+        else:
+            diff_text = "No preview method implemented in the controller."
+
+        # Show the diff in a dialog
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"Preview: {getattr(plan, 'plan_type', 'N/A')}")
+        layout = QVBoxLayout(dialog)
+        diff_edit = QTextEdit()
+        diff_edit.setReadOnly(True)
+        diff_edit.setPlainText(diff_text)
+        layout.addWidget(diff_edit)
+
+        close_button = QPushButton("Close")
+        close_button.clicked.connect(dialog.close)
+        layout.addWidget(close_button)
+
+        dialog.setLayout(layout)
+        dialog.resize(800, 600)
+        dialog.exec_()
+
+    def on_apply_refactor(self):
+        """
+        Gather checked items => call controller.apply_refactoring(...).
+        """
+        checked_plans = self._get_checked_plans()
+        if not checked_plans:
+            QMessageBox.information(self, "No Selection", "No refactoring plans selected.")
+            return
+
+        if not self.controller:
+            QMessageBox.warning(self, "No Controller", "No CodeAnalysisController is set.")
+            return
+
+        # Delegate to the controller
+        self.controller.apply_refactoring(checked_plans)
         QMessageBox.information(self, "Refactoring Complete", f"Applied {len(checked_plans)} plan(s).")
+
+    def _get_checked_plans(self):
+        """
+        Helper to retrieve the plan objects stored in the UserRole of each
+        checked tree item.
+        """
+        checked_plans = []
+        for i in range(self.refactor_tree.topLevelItemCount()):
+            item = self.refactor_tree.topLevelItem(i)
+            if item.checkState(0) == Qt.Checked:
+                plan = item.data(0, Qt.UserRole)
+                if plan:
+                    checked_plans.append(plan)
+        return checked_plans

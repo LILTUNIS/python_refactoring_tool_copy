@@ -1,15 +1,17 @@
+import csv
 import importlib
 import os
 import sys
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout,
     QGridLayout, QFileDialog, QMessageBox, QTabWidget, QSlider, QLineEdit,
-    QProgressBar, QStyleFactory, QScrollArea, QFrame, QTreeWidgetItem
+    QProgressBar, QStyleFactory, QScrollArea
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QPalette, QColor
 
+from controller.code_analysis_controller import CodeAnalysisController
 # Import the other tab classes from tabs_view
 from view.tabs_view import (
     SummaryTab,
@@ -17,12 +19,8 @@ from view.tabs_view import (
     CloneTab,
     RuntimeTab,
     DataFlowTab,
-    RefactorTab  # <-- Import RefactorTab here
+    RefactorTab
 )
-
-from PyQt5.QtWidgets import QTreeWidget, QHBoxLayout
-
-from controller.code_analysis_controller import CodeAnalysisController
 
 
 def import_user_script(file_path):
@@ -174,7 +172,7 @@ class ApplicationView(QMainWindow):
         font = QFont("Segoe UI", 10)
         QApplication.instance().setFont(font)
 
-        # Update QPushButton style with a flat modern look and blue accent
+        # Update QPushButton style
         for btn in self.findChildren(QPushButton):
             btn.setStyleSheet(
                 """
@@ -312,9 +310,16 @@ class ApplicationView(QMainWindow):
 
             analysis_path = self.file_path if self.file_path else self.folder_path
 
-            # Dynamically import the single file if chosen
+            # If user picked a single file, we can import it
             if self.file_path:
                 import_user_script(self.file_path)
+
+            # Also set the project path for RopeRefactorEngine
+            if self.folder_path:
+                self.controller.set_project_path(self.folder_path)
+            elif self.file_path:
+                project_root = os.path.dirname(self.file_path)
+                self.controller.set_project_path(project_root)
 
             # Show progress bar
             self.progress.setVisible(True)
@@ -338,8 +343,7 @@ class ApplicationView(QMainWindow):
             self.summary_tab.show_duplicate_pairs(insights.get("top_duplicate_pairs", []))
             self.summary_tab.show_refactoring_suggestions(insights.get("refactoring_suggestions", []))
 
-            # Also update the new RefactorTab with advanced suggestions
-            # new code
+            # Update the RefactorTab with the structured plans
             refactor_plans = results.get("refactoring_plans", [])
             self.refactor_tab.update_refactor_plans(refactor_plans)
 
@@ -367,39 +371,57 @@ class ApplicationView(QMainWindow):
         self.summary_tab.show_slowest_functions([])
         self.summary_tab.show_duplicate_pairs([])
         self.summary_tab.show_refactoring_suggestions([])
-        self.refactor_tab.update_refactor_suggestions([])
+
+        # If you really want to clear the RefactorTab, you can do:
+        self.refactor_tab.update_refactor_plans([])
 
         QMessageBox.information(self, "Reset", "Application reset. Please select a new file/folder to analyze.")
 
     def export_report(self):
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Report As", "", "Text Files (*.txt)"
+            self, "Save Report As", "", "CSV Files (*.csv)"
         )
         if not file_path:
             return
 
         try:
-            lines = ["=== Summary ==="]
-            # Example: summary_tab has a dictionary of QLabel objects named summary_labels
-            if hasattr(self.summary_tab, 'summary_labels'):
-                for lbl in self.summary_tab.summary_labels.values():
-                    lines.append(lbl.text())
+            with open(file_path, mode="w", encoding="utf-8", newline="") as file:
+                writer = csv.writer(file)
 
-            lines.append("\n=== Static Analysis ===")
-            # If static_tab uses a QTreeWidget called static_tree:
-            if hasattr(self.static_tab, 'static_tree'):
-                tree = self.static_tab.static_tree
-                for i in range(tree.topLevelItemCount()):
-                    item = tree.topLevelItem(i)
-                    values = [item.text(col) for col in range(item.columnCount())]
-                    lines.append(" | ".join(values))
+                # === Summary Metrics ===
+                writer.writerow(["=== Summary ==="])
+                if hasattr(self.summary_tab, 'summary_labels'):
+                    for key, lbl in self.summary_tab.summary_labels.items():
+                        writer.writerow([key, lbl.text().split(":")[-1].strip()])  # Extract numeric value
 
-            # Add more exports from other tabs as desired...
+                # === Static Analysis ===
+                writer.writerow([])
+                writer.writerow(["=== Static Analysis ==="])
+                if hasattr(self.static_tab, 'static_tree'):
+                    tree = self.static_tab.static_tree
+                    headers = [tree.headerItem().text(col) for col in range(tree.columnCount())]
+                    writer.writerow(headers)  # Write column headers
 
-            report = "\n".join(lines)
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(report)
-            QMessageBox.information(self, "Export Successful", f"Report exported to {file_path}")
+                    for i in range(tree.topLevelItemCount()):
+                        item = tree.topLevelItem(i)
+                        row = [item.text(col) for col in range(tree.columnCount())]
+                        writer.writerow(row)
+
+                # === Clone Similarity Analysis ===
+                writer.writerow([])
+                writer.writerow(["=== Clone Similarity Analysis ==="])
+                if hasattr(self.clone_tab, 'clone_tree'):
+                    tree = self.clone_tab.clone_tree
+                    headers = [tree.headerItem().text(col) for col in range(tree.columnCount())]
+                    writer.writerow(headers)  # Write column headers
+
+                    for i in range(tree.topLevelItemCount()):
+                        item = tree.topLevelItem(i)
+                        row = [item.text(col) for col in range(tree.columnCount())]
+                        writer.writerow(row)
+
+            QMessageBox.information(self, "Export Successful", f"CSV report exported to {file_path}")
+
         except Exception as e:
             QMessageBox.critical(self, "Export Error", str(e))
 

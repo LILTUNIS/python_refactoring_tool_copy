@@ -4,13 +4,12 @@ import json
 import logging
 import os
 from typing import Any, Dict, List, Optional, Tuple
-from dataclasses import dataclass
 
-from model.static_analyzer import (
-    SimilarityResult,
+from model.static_model import static_model
+from services.static_analyzer import (
     find_similar_nodes
 )
-from model.runtime_checker import RuntimeAnalyzer
+from services.runtime_checker import RuntimeAnalyzer
 
 logging.basicConfig(level=logging.INFO)
 
@@ -145,7 +144,7 @@ class StaticAnalysisService:
     def parse_and_find_similarities(
         python_files: List[str],
         threshold: float
-    ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[SimilarityResult], Dict[Tuple[str, str], Tuple[int, int]]]:
+    ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[static_model], Dict[Tuple[str, str], Tuple[int, int]]]:
         # Parse all files into ASTs using the new helper function.
         ast_trees = parse_files(python_files)
         all_similar_nodes = []
