@@ -11,60 +11,77 @@ import time
 import tracemalloc
 from typing import Any, Dict, List, Tuple, Callable, get_origin, get_args
 
-import coverage  # For coverage-based instrumentation
+import coverage  # Used for coverage-based instrumentation to record executed lines
 
-from services.data_flow_analyzer import get_usage_info
+# Import RuntimeMetrics from the runtime model to store performance metrics.
 from model.runtime_model import RuntimeMetrics
+# Import function to extract usage information for function arguments.
+from services.data_flow_analyzer import get_usage_info
 
+# Configure logging to include timestamps, log level, and messages.
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
+
 
 class RuntimeAnalyzer:
     """
-    Analyzes runtime behavior for code clones using coverage, memory, timing, etc.
-    (No multiprocessing – direct calls only.)
+    Analyzes runtime behavior for code clones using various metrics including:
+      - Coverage (which lines and branches were executed)
+      - Memory usage (via tracemalloc)
+      - Timing information (CPU and wall time)
+
+    This analyzer operates in a single process (no multiprocessing) and supports
+    repeated tests for obtaining robust measurements.
     """
 
     def __init__(self, num_tests: int = 20, dummy_list_size: int = 100) -> None:
+        # Dictionary mapping function names to their RuntimeMetrics.
         self.metrics: Dict[str, RuntimeMetrics] = {}
         self.num_tests = num_tests
         self.dummy_list_size = dummy_list_size
+        # Frozen copy of metrics after runtime checks complete.
         self.frozen_metrics: Dict[str, RuntimeMetrics] = {}
-        # Maps (absolute file path, function name) -> (start_line, end_line)
+        # Maps a tuple of (absolute file path, function name) to the function's start and end lines.
         self.function_line_map: Dict[Tuple[str, str], Tuple[int, int]] = {}
 
     def runtime_check(self, func: Callable) -> Callable:
         """
-        Decorator that increments call count, measures single-call execution time,
-        and catches exceptions to update error counts.
+        Decorator to wrap a function in order to measure:
+          - Execution time (per call)
+          - Number of calls
+          - Errors encountered during execution
+
+        It increments the call count, captures execution time, and updates error counts.
         """
         if not func.__name__ or func.__name__.strip() == "":
             logging.warning("Skipping runtime check for unnamed function.")
             return func
 
-        # If we have already decorated it, skip
+        # Prevent decorating a function multiple times.
         if getattr(func, "_is_decorated", False):
             logging.debug(f"Function {func.__name__} already decorated; skipping duplicate.")
             return func
 
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            start_ns = time.perf_counter_ns()
+            start_ns = time.perf_counter_ns()  # High-resolution wall clock start time.
             func_name = func.__name__
             try:
                 result = func(*args, **kwargs)
             except Exception as e:
+                # On exception, update error count for the function.
                 if func_name not in self.metrics:
                     self.metrics[func_name] = RuntimeMetrics()
                 self.metrics[func_name].error_count += 1
                 logging.warning(f"Exception in function {func_name}: {e}", exc_info=True)
                 return None
-            end_ns = time.perf_counter_ns()
+            end_ns = time.perf_counter_ns()  # End time measurement.
 
             if func_name not in self.metrics:
                 self.metrics[func_name] = RuntimeMetrics()
 
-            elapsed_sec = (end_ns - start_ns) / 1e9
+            elapsed_sec = (end_ns - start_ns) / 1e9  # Convert nanoseconds to seconds.
             try:
+                # Update metrics with elapsed time, passed arguments, and function result.
                 self.metrics[func_name].update(
                     elapsed_sec,
                     {"args": args, "kwargs": kwargs},
@@ -76,23 +93,30 @@ class RuntimeAnalyzer:
             logging.debug(f"Decorator - {func_name}: Single-call time = {elapsed_sec:.6f}s")
             return result
 
+        # Mark the function as decorated.
         wrapper._is_decorated = True
         return wrapper
 
     def generate_dummy_arguments(self, func: Callable) -> Tuple[list, dict]:
         """
-        Generates test arguments based on function signature and usage analysis.
-        Attempts to guess types for each parameter (int, float, list, etc.).
+        Generates dummy test arguments for a given function based on its signature and usage analysis.
+        It uses default values when available or attempts to infer argument types (e.g., int, float, list, etc.)
+        using both type annotations and usage data from get_usage_info.
+
+        Returns:
+            Tuple containing a list of positional arguments and a dictionary of keyword arguments.
         """
         if not func.__name__ or func.__name__.strip() == "":
             logging.warning("Function has no valid name. Returning empty dummy arguments.")
             return [], {}
 
+        # Limits and ranges for dummy argument generation.
         RECURSIVE_LIMIT = 20
         LIST_SIZE_LIMIT = 5
         INT_RANGE = (-10, 10)
 
         def generate_test_list(size=LIST_SIZE_LIMIT, elem_type=int):
+            # Generate a list of dummy elements based on the expected element type.
             if elem_type == int:
                 return [random.randint(*INT_RANGE) for _ in range(size)]
             elif elem_type == float:
@@ -102,25 +126,26 @@ class RuntimeAnalyzer:
             elif elem_type == bool:
                 return [random.choice([True, False]) for _ in range(size)]
             else:
-                # fallback
+                # Fallback for unsupported types.
                 return [random.randint(*INT_RANGE) for _ in range(size)]
 
+        # Get usage information (e.g., how arguments are used in the function).
         usage_data = get_usage_info(func)
         signature = inspect.signature(func)
         args, kwargs = [], {}
 
         for name, param in signature.parameters.items():
-            # If the parameter has a default, just use it
+            # Use default value if one exists.
             if param.default != inspect.Parameter.empty:
                 kwargs[name] = param.default
                 continue
 
-            # Check type annotation
+            # Check type annotation for type inference.
             origin = get_origin(param.annotation)
             args_info = get_args(param.annotation)
 
             if param.annotation == int:
-                # special case for certain known recursives
+                # Special case for known recursive functions.
                 if func.__name__.lower() in ["fibonacci", "factorial"]:
                     args.append(random.randint(1, RECURSIVE_LIMIT))
                 else:
@@ -136,6 +161,7 @@ class RuntimeAnalyzer:
                 args.append(random.choice([True, False]))
 
             elif param.annotation == list or origin == list:
+                # If element type is specified, generate a list of that type.
                 if args_info:
                     elem_type = args_info[0]
                     args.append(generate_test_list(elem_type=elem_type))
@@ -143,7 +169,7 @@ class RuntimeAnalyzer:
                     args.append(generate_test_list())
 
             else:
-                # fallback to usage_data or guess
+                # Fallback to usage data inference if type annotation is absent or unrecognized.
                 usage = usage_data.get(name, {})
                 inferred_type = usage.get("type", "int")
 
@@ -176,11 +202,25 @@ class RuntimeAnalyzer:
                           args: List[Any], kwargs: Dict[str, Any],
                           original_file_path: str) -> Tuple[float, float, Dict[str, Any]]:
         """
-        Measure coverage, memory usage, CPU/wall time, etc. by calling `func` directly.
-        No multiprocessing or timeouts – direct calls only.
+        Runs a unified test for a function to measure:
+          - CPU and wall time over a given number of iterations.
+          - Memory usage via tracemalloc.
+          - Code coverage information using the coverage module.
+
+        Parameters:
+            func: The function to test.
+            func_name: Name of the function (used for logging and metrics).
+            iterations: Number of times to run the function.
+            args: Positional arguments for the function.
+            kwargs: Keyword arguments for the function.
+            original_file_path: File path of the module containing the function.
+
+        Returns:
+            A tuple containing total CPU time, total wall time, and a dictionary with coverage and branch data.
         """
         abs_file_path = os.path.abspath(original_file_path)
 
+        # Initialize coverage for the target file with branch tracking.
         cov = coverage.Coverage(branch=True, include=[abs_file_path])
         cov.erase()
 
@@ -192,23 +232,24 @@ class RuntimeAnalyzer:
         start_cpu_ns = time.process_time_ns()
 
         for _ in range(iterations):
-            gc.collect()
+            gc.collect()  # Force garbage collection between iterations.
             snapshot_before = tracemalloc.take_snapshot()
 
-            # Directly call the function – no separate processes or timeouts
+            # Call the function directly.
             try:
                 _ = func(*args, **kwargs)
             except Exception as e:
-                # If an exception occurs, log it and increment error_count
+                # Log exception and update error count for this function.
                 if func_name not in self.metrics:
                     self.metrics[func_name] = RuntimeMetrics()
                 self.metrics[func_name].error_count += 1
                 logging.warning(f"Exception in repeated calls of {func_name}: {e}")
 
             snapshot_after = tracemalloc.take_snapshot()
+            # Compare memory snapshots to compute memory difference.
             stats = snapshot_after.compare_to(snapshot_before, 'lineno')
             mem_diff = sum(abs(stat.size_diff) for stat in stats)
-            # update memory usage in KB
+            # Update memory usage in KB.
             self.metrics[func_name].update_memory(mem_diff / 1024.0)
 
         end_wall_ns = time.perf_counter_ns()
@@ -218,6 +259,7 @@ class RuntimeAnalyzer:
         cov.save()
         tracemalloc.stop()
 
+        # Compute total CPU and wall times in seconds.
         total_cpu_time = (end_cpu_ns - start_cpu_ns) / 1e9
         total_wall_time = (end_wall_ns - start_wall_ns) / 1e9
 
@@ -226,11 +268,13 @@ class RuntimeAnalyzer:
         branch_arcs_map = {}
         branch_execution_frequency = {}
 
-        # figure out function lines
+        # Determine the function's code boundaries based on stored line numbers.
         start_line, end_line = self.function_line_map.get((abs_file_path, func_name), (0, 9999999))
 
+        # Process coverage data for each measured file.
         for measured_file in cov_data.measured_files():
             executed_lines = cov_data.lines(measured_file) or []
+            # Filter executed lines to only those within the function's line range.
             func_lines = [ln for ln in executed_lines if start_line <= ln <= end_line]
             coverage_map[measured_file] = sorted(func_lines)
 
@@ -245,9 +289,9 @@ class RuntimeAnalyzer:
 
             executed_branch_arcs = cov_data.arcs(measured_file)
             if executed_branch_arcs:
+                # Tally branch execution frequency for each arc.
                 for (s_ln, e_ln) in executed_branch_arcs:
-                    if ((start_line <= s_ln <= end_line) or
-                        (start_line <= e_ln <= end_line)):
+                    if ((start_line <= s_ln <= end_line) or (start_line <= e_ln <= end_line)):
                         if s_ln > 0 and e_ln > 0:
                             branch_execution_frequency[(s_ln, e_ln)] = \
                                 branch_execution_frequency.get((s_ln, e_ln), 0) + 1
@@ -261,12 +305,20 @@ class RuntimeAnalyzer:
         }
 
     def apply_runtime_checks(self,
-                            similar_nodes: List[Dict],
-                            global_namespace: Dict[str, Any],
-                            num_tests: int = None,
-                            dummy_list_size: int = None) -> None:
+                             similar_nodes: List[Dict],
+                             global_namespace: Dict[str, Any],
+                             num_tests: int = None,
+                             dummy_list_size: int = None) -> None:
         """
-        Decorates each function once, then calls them repeatedly in a single process (no multiprocessing).
+        Applies runtime checks on functions found in similar nodes.
+        It decorates functions (if not already done) and then repeatedly
+        calls them with generated dummy arguments to gather runtime metrics.
+
+        Parameters:
+            similar_nodes: A list of nodes containing runtime metrics for function pairs.
+            global_namespace: Dictionary representing the global namespace where functions are defined.
+            num_tests: (Optional) Number of times to test each function.
+            dummy_list_size: (Optional) Size of dummy lists for test arguments.
         """
         if num_tests is None:
             num_tests = self.num_tests
@@ -274,8 +326,9 @@ class RuntimeAnalyzer:
             dummy_list_size = self.dummy_list_size
 
         logging.debug(f"Entering apply_runtime_checks: num_tests={num_tests}, dummy_list_size={dummy_list_size}")
-        decorated_funcs = set()  # keep track of (module, function name) we have decorated
+        decorated_funcs = set()  # Keep track of already decorated functions by (module, function name).
 
+        # Iterate over similar nodes that contain metrics for two functions.
         for result in similar_nodes:
             func1 = result.get("function1_metrics")
             func2 = result.get("function2_metrics")
@@ -291,11 +344,13 @@ class RuntimeAnalyzer:
                     continue
 
                 logging.debug(f"Processing function: {fn_name}")
+                # Check if the function exists in the provided global namespace.
                 if fn_name in global_namespace:
                     original_func = global_namespace[fn_name]
                     key = (getattr(original_func, "__module__", ""), fn_name)
                     if key not in decorated_funcs:
                         decorated_funcs.add(key)
+                        # Decorate the function to capture runtime metrics.
                         decorated_func = self.runtime_check(original_func)
                         global_namespace[fn_name] = decorated_func
 
@@ -304,6 +359,7 @@ class RuntimeAnalyzer:
                             self.metrics[fn_name] = RuntimeMetrics()
                             logging.debug(f"Metrics object created for function {fn_name}")
 
+                        # Generate dummy arguments based on function signature and usage.
                         args, kwargs = self.generate_dummy_arguments(original_func)
                         logging.debug(f"Generated dummy arguments for {fn_name}: args={args}, kwargs={kwargs}")
 
@@ -321,6 +377,7 @@ class RuntimeAnalyzer:
                         branch_exec_count = sum(branch_execution_frequency.values())
 
                         calls = self.metrics[fn_name].call_count
+                        # Update the runtime metrics for this function.
                         self.metrics[fn_name].test_results.setdefault(num_tests, {}).update({
                             "runtime": {
                                 "avg_cpu_time": total_cpu / num_tests if num_tests else 0.0,
@@ -344,26 +401,47 @@ class RuntimeAnalyzer:
                 else:
                     logging.warning(f"Function {fn_name} not found in global_namespace; skipping runtime test.")
 
-        # Freeze a copy of final metrics
+        # Freeze a deep copy of the final metrics for later retrieval or reporting.
         self.frozen_metrics = copy.deepcopy(self.metrics)
         logging.debug("apply_runtime_checks completed. Final frozen metrics: " + str(self.frozen_metrics))
 
 
 #
-# Optionally, if you need a similarity function based on runtime metrics:
+# Optional similarity functions based on runtime metrics:
 #
 
 def jaccard_similarity(set_a: set, set_b: set) -> float:
+    """
+    Computes the Jaccard similarity between two sets.
+
+    Returns 1.0 if both sets are empty, 0.0 if only one is empty, or the
+    ratio of the intersection over the union otherwise.
+    """
     if not set_a and not set_b:
         return 1.0
     if not set_a or not set_b:
         return 0.0
     return len(set_a & set_b) / len(set_a | set_b)
 
+
 def compute_runtime_similarity(metrics1: RuntimeMetrics, metrics2: RuntimeMetrics,
                                w1: float = 0.4, w2: float = 0.3, w3: float = 0.2, w4: float = 0.1) -> float:
     """
-    Example: Weighted sum of time similarity, memory similarity, branch coverage similarity, etc.
+    Computes a weighted similarity score between two functions based on their runtime metrics.
+
+    The similarity score is a weighted sum of:
+      - Time similarity (based on average execution time)
+      - Memory similarity (based on average memory usage)
+      - Branch coverage similarity (Jaccard similarity over executed branch arcs)
+      - Input pattern similarity (Jaccard similarity over input patterns)
+
+    Parameters:
+        metrics1: RuntimeMetrics object for the first function.
+        metrics2: RuntimeMetrics object for the second function.
+        w1, w2, w3, w4: Weights for each component of the similarity score.
+
+    Returns:
+        A float value between 0.0 and 1.0 representing the overall similarity.
     """
     t1 = metrics1.avg_time
     t2 = metrics2.avg_time
@@ -374,6 +452,7 @@ def compute_runtime_similarity(metrics1: RuntimeMetrics, metrics2: RuntimeMetric
     sim_memory = 1 - abs(m1 - m2) / (max(m1, m2) + 1e-6)
 
     def get_branch_execs(rm: RuntimeMetrics) -> set:
+        # Extract branch execution frequency keys from the test results.
         if rm.test_results:
             first_key = next(iter(rm.test_results))
             freq = rm.test_results[first_key].get("runtime", {}).get("branch_execution_frequency", {})

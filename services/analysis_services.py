@@ -5,116 +5,34 @@ import logging
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
+# Import static analysis model and service.
 from model.static_model import static_model
-from services.static_analyzer import (
-    find_similar_nodes
-)
+from services.static_analyzer import find_similar_nodes
+# Import runtime analysis service for dynamic performance checking.
 from services.runtime_checker import RuntimeAnalyzer
 
+# Configure logging at INFO level.
 logging.basicConfig(level=logging.INFO)
 
 
-class DashboardMetricsService:
-    @staticmethod
-    def compute_key_metrics(
-            static_nodes: List[Dict[str, Any]],
-            token_clones: List[Dict[str, Any]],
-            runtime_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        unique_function_names = set()
-        complexities = []
-        locs = []
-
-        # Collect function metrics from static nodes (only if name is non-empty)
-        for pair in static_nodes:
-            for fn_key in ["function1_metrics", "function2_metrics"]:
-                if fn := pair.get(fn_key, {}):
-                    name = fn.get("name", "").strip()
-                    if name:
-                        unique_function_names.add(name)
-                        complexities.append(fn.get("complexity", 0))
-                        locs.append(fn.get("loc", 0))
-
-        total_functions = len(unique_function_names)
-        avg_complexity = sum(complexities) / len(complexities) if complexities else 0.0
-        avg_loc = sum(locs) / len(locs) if locs else 0.0
-
-        pair_map = {}
-
-        # Combine AST, Token, and Dataflow Similarities
-        for clone in token_clones:
-            f1_name = clone.get("func1", "").strip()
-            f2_name = clone.get("func2", "").strip()
-            if f1_name and f2_name and f1_name != f2_name:
-                key = tuple(sorted([f1_name, f2_name]))
-                ast_sim = clone.get("ast_similarity")
-                token_sim = clone.get("token_similarity")
-                dataflow_sim = clone.get("dataflow_similarity")
-                pair_map[key] = {
-                    "ast_sim": ast_sim,
-                    "token_sim": token_sim,
-                    "dataflow_sim": dataflow_sim,
-                }
-
-        duplicate_pairs = 0
-        token_similarities = []
-        ast_similarities = []
-        dataflow_similarities = []
-
-        # Gather similarities from each pair
-        for key, sims in pair_map.items():
-            ast_val = sims.get("ast_sim")
-            token_val = sims.get("token_sim")
-            dataflow_val = sims.get("dataflow_sim")
-            if any(val is not None for val in [ast_val, token_val, dataflow_val]):
-                duplicate_pairs += 1
-            if token_val is not None:
-                token_similarities.append(token_val)
-            if ast_val is not None:
-                ast_similarities.append(ast_val)
-            if dataflow_val is not None:
-                dataflow_similarities.append(dataflow_val)
-
-        token_avg = sum(token_similarities) / len(token_similarities) if token_similarities else None
-        ast_avg = sum(ast_similarities) / len(ast_similarities) if ast_similarities else None
-        dataflow_avg = sum(dataflow_similarities) / len(dataflow_similarities) if dataflow_similarities else None
-
-        similarity_values = [val for val in [token_avg, ast_avg, dataflow_avg] if val is not None]
-        overall_similarity = sum(similarity_values) / len(similarity_values) if similarity_values else 0.0
-
-        # Calculate Memory Metrics
-        total_avg_memory = 0.0
-        peak_memory = 0.0
-        for func in runtime_data.get("functions", []):
-            for test_data in func.get("test_results", {}).values():
-                total_avg_memory += test_data.get("total_memory_kb", 0.0)
-                peak_memory += test_data.get("peak_memory_kb", 0.0)
-
-        # Calculate Runtime Time Metrics
-        total_avg_time = sum(func.get("avg_time", 0.0) for func in runtime_data.get("functions", []))
-
-        return {
-            "total_functions": total_functions,
-            "avg_complexity": round(avg_complexity, 2),
-            "avg_loc": round(avg_loc, 2),
-            "overall_similarity": round(overall_similarity, 2),
-            "total_duplicate_pairs": duplicate_pairs,
-            "total_avg_memory": round(total_avg_memory, 2),
-            "peak_memory": round(peak_memory, 2),
-            "total_avg_time": round(total_avg_time, 6),
-            "dataflow_avg_similarity": round(dataflow_avg, 2) if dataflow_avg is not None else None,
-        }
-
-
 class DynamicImportService:
+    """
+    Provides functionality to dynamically import a Python module given its file path.
+    This service leverages importlib to load modules at runtime.
+    """
+
     @staticmethod
     def dynamic_import(file_path: str) -> Optional[Any]:
         try:
+            # Extract the module name from the file name.
             module_name = os.path.splitext(os.path.basename(file_path))[0]
+            # Create a module spec from the file location.
             spec = importlib.util.spec_from_file_location(module_name, file_path)
             if spec is None or spec.loader is None:
                 raise RuntimeError("Unable to create module spec.")
+            # Create a module based on the spec.
             module = importlib.util.module_from_spec(spec)
+            # Execute the module to load its contents.
             spec.loader.exec_module(module)
             return module
         except Exception as e:
@@ -124,14 +42,20 @@ class DynamicImportService:
 
 def parse_files(python_files: List[str]) -> Dict[str, Any]:
     """
-    Helper function that reads each Python file and parses it into an AST.
-    Returns a dictionary mapping file paths to their corresponding AST.
+    Reads and parses each Python file into an Abstract Syntax Tree (AST).
+
+    Parameters:
+        python_files: List of file paths to Python source files.
+
+    Returns:
+        A dictionary mapping file paths to their corresponding AST.
     """
     ast_trees = {}
     for file in python_files:
         try:
             with open(file, "r", encoding="utf-8") as f:
                 source = f.read()
+            # Parse the source code into an AST.
             tree = ast.parse(source, filename=file)
             ast_trees[file] = tree
         except Exception as e:
@@ -140,27 +64,36 @@ def parse_files(python_files: List[str]) -> Dict[str, Any]:
 
 
 class StaticAnalysisService:
+    """
+    Provides services for performing static analysis on Python files.
+
+    This includes:
+      - Parsing files into ASTs.
+      - Identifying similar code nodes (potential clones) using a similarity threshold.
+      - Building a mapping of function line ranges for later use in runtime analysis.
+    """
+
     @staticmethod
     def parse_and_find_similarities(
-        python_files: List[str],
-        threshold: float
+            python_files: List[str],
+            threshold: float
     ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[static_model], Dict[Tuple[str, str], Tuple[int, int]]]:
-        # Parse all files into ASTs using the new helper function.
+        # Parse all provided files into their AST representations.
         ast_trees = parse_files(python_files)
         all_similar_nodes = []
-        similarity_results = []
+        similarity_results = []  # Optionally, additional similarity data can be collected here.
 
-        # Dictionary to store each function’s line range:
-        # key = (abs_file_path, function_name), value = (start_line, end_line)
+        # Dictionary mapping (absolute file path, function name) to its (start_line, end_line).
         function_line_map = {}
 
         for file_path, tree in ast_trees.items():
             abs_file_path = os.path.abspath(file_path)
 
+            # Read source code to support line-based operations.
             with open(file_path, "r", encoding="utf-8") as f:
                 source_code = f.read()
 
-            # Find similar nodes using the imported function from static_analyzer.
+            # Use the static analyzer to find similar code nodes above the provided threshold.
             static_nodes = find_similar_nodes(
                 tree,
                 source_code,
@@ -168,14 +101,14 @@ class StaticAnalysisService:
                 abs_file_path=abs_file_path
             )
 
-            # Filter out any node pair with missing or empty function names.
+            # Filter out node pairs with missing or empty function names.
             static_nodes = [
                 node for node in static_nodes
                 if node.get("function1_metrics", {}).get("name", "").strip() and
                    node.get("function2_metrics", {}).get("name", "").strip()
             ]
 
-            # Collect each function’s start/end lines into function_line_map.
+            # Collect start/end line ranges for each function encountered.
             for node_pair in static_nodes:
                 func1_info = node_pair.get("function1_metrics", {})
                 func2_info = node_pair.get("function2_metrics", {})
@@ -184,18 +117,20 @@ class StaticAnalysisService:
                 func2_name = func2_info.get("name", "").strip()
 
                 start_line1 = func1_info.get("start_line")
-                end_line1   = func1_info.get("end_line")
+                end_line1 = func1_info.get("end_line")
                 if func1_name and start_line1 and end_line1:
                     function_line_map[(abs_file_path, func1_name)] = (start_line1, end_line1)
 
                 start_line2 = func2_info.get("start_line")
-                end_line2   = func2_info.get("end_line")
+                end_line2 = func2_info.get("end_line")
                 if func2_name and start_line2 and end_line2:
                     function_line_map[(abs_file_path, func2_name)] = (start_line2, end_line2)
 
+            # Aggregate all similar nodes for further analysis.
             all_similar_nodes.extend(static_nodes)
-            # (Optionally, similarity_results can be built here if needed.)
+            # (Additional similarity_results could be computed and stored if needed.)
 
+        # Print debugging output to aid in verification of analysis results.
         print("\n========== DEBUG: FULL STATIC ANALYSIS OUTPUT ==========")
         print(json.dumps(all_similar_nodes, indent=2))
 
@@ -206,16 +141,42 @@ class StaticAnalysisService:
 
 
 class RuntimeAnalysisService:
+    """
+    Wraps the RuntimeAnalyzer service to apply runtime checks on analyzed functions.
+
+    This service allows:
+      - Applying runtime tests on functions that have been flagged as similar.
+      - Retrieving collected runtime metrics for further analysis or reporting.
+    """
+
     def __init__(self):
         self.runtime_analyzer = RuntimeAnalyzer()
 
     def apply_runtime_checks(self, similar_results, global_namespace, num_tests: int):
+        """
+        Applies runtime tests to functions identified in static analysis.
+
+        Parameters:
+            similar_results: List of similar node results (containing runtime metrics).
+            global_namespace: Dictionary representing the global namespace with function definitions.
+            num_tests: Number of tests to execute for each function.
+        """
         self.runtime_analyzer.apply_runtime_checks(similar_results, global_namespace, num_tests)
 
     def get_runtime_data(self) -> Dict[str, Any]:
+        """
+        Gathers and returns runtime data from the RuntimeAnalyzer.
+
+        This includes per-function metrics such as call counts, execution times,
+        average times, test results, and input/output patterns. Also computes peak memory usage.
+
+        Returns:
+            A dictionary containing a list of function metrics and the overall peak memory usage.
+        """
         runtime_data = self.runtime_analyzer.metrics
         functions = []
         peak_memory = 0.0
+        # Iterate over each function's runtime metrics.
         for func_name, metrics in runtime_data.items():
             for num_tests, result in metrics.test_results.items():
                 peak_memory = max(peak_memory, result.get("peak_memory_kb", 0.0))

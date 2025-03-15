@@ -12,9 +12,8 @@ from PyQt5.QtWidgets import (
 )
 
 from controller.code_analysis_controller import CodeAnalysisController
-# Import the other tab classes from tabs_view
+# Import individual tab classes from the view package for a modular design
 from view.tabs_view import (
-    SummaryTab,
     StaticTab,
     CloneTab,
     RuntimeTab,
@@ -26,6 +25,9 @@ from view.tabs_view import (
 def import_user_script(file_path):
     """
     Dynamically imports a user-selected Python file as a module.
+
+    This function uses importlib to load a module from a given file path, allowing
+    for runtime integration of user code.
     """
     module_name = os.path.splitext(os.path.basename(file_path))[0]
     spec = importlib.util.spec_from_file_location(module_name, file_path)
@@ -36,74 +38,93 @@ def import_user_script(file_path):
 
 
 class ApplicationView(QMainWindow):
-    """GUI for analyzing code similarity and presenting results using PyQt5."""
+    """
+    Main application window for the Code Similarity Analyzer.
+
+    This class sets up the PyQt5-based GUI, managing user interactions,
+    dynamic loading of analysis modules, and display of various analysis results.
+    """
 
     def __init__(self, controller):
+        """
+        Initialize the application view with its controller and default settings.
+        """
         super().__init__()
         self.controller = controller
 
+        # Paths for selected file or folder and threshold value for analysis
         self.file_path = None
         self.folder_path = None
-        self.threshold_value = 0.8  # Default threshold
+        self.threshold_value = 0.0  # Default threshold value (scaled 0.0-1.0)
         self.analysis_results = {}
 
+        # Initialize UI components and apply modern styling
         self.initUI()
         self.apply_modern_style()
 
     def initUI(self):
+        """
+        Set up the main window, including scroll area, header widgets, and tabs.
+        """
         self.setWindowTitle("Code Similarity Analyzer")
         self.resize(1200, 1000)
 
-        # Create a scroll area that will allow the content to be scrolled if it's too long
+        # Create a scrollable area to accommodate long content
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         self.setCentralWidget(scroll_area)
 
-        # Create a central widget and assign it to the scroll area
+        # Set up the central widget and its layout
         central_widget = QWidget()
         scroll_area.setWidget(central_widget)
-
         main_layout = QVBoxLayout(central_widget)
 
+        # Create header controls (file selection, threshold, etc.)
         self.create_header_widgets(main_layout)
 
+        # Initialize tabbed interface for displaying different analysis results.
+        # The first tab will now be Similarity.
         self.notebook = QTabWidget()
         main_layout.addWidget(self.notebook)
 
-        # Create each tab
-        self.summary_tab = SummaryTab()
-        self.static_tab = StaticTab()
+        # Create each analysis tab instance
         self.clone_tab = CloneTab()
+        self.static_tab = StaticTab()
         self.runtime_tab = RuntimeTab()
         self.dataflow_tab = DataFlowTab()
-
-        # Use the RefactorTab from tabs_view.py
         self.refactor_tab = RefactorTab()
 
-        # Add them to the QTabWidget
-        self.notebook.addTab(self.summary_tab, "Summary")
-        self.notebook.addTab(self.static_tab, "Static Analysis")
+        # Add tabs to the QTabWidget. The Similarity tab (clone_tab) is now first.
         self.notebook.addTab(self.clone_tab, "Similarity")
+        self.notebook.addTab(self.static_tab, "Static Analysis")
         self.notebook.addTab(self.runtime_tab, "Runtime")
         self.notebook.addTab(self.dataflow_tab, "Data Flow")
         self.notebook.addTab(self.refactor_tab, "Refactor")
 
     def create_header_widgets(self, layout):
+        """
+        Create header widgets for file/folder selection, threshold slider, test cases entry,
+        progress bar, and action buttons.
+        """
         header_widget = QWidget()
         header_layout = QGridLayout(header_widget)
 
+        # Main header title
         header_label = QLabel("Code Similarity Analysis Tool")
         header_label.setStyleSheet("font-size: 22px; font-weight: 600; color: #3498db;")
         header_layout.addWidget(header_label, 0, 0, 1, 4)
 
+        # Button to browse and select a Python file
         btn_browse_file = QPushButton("Browse File")
         btn_browse_file.clicked.connect(self.browse_file)
         header_layout.addWidget(btn_browse_file, 1, 0)
 
+        # Button to browse and select a folder
         btn_browse_folder = QPushButton("Browse Folder")
         btn_browse_folder.clicked.connect(self.browse_folder)
         header_layout.addWidget(btn_browse_folder, 1, 1)
 
+        # Label and slider for setting the similarity threshold
         threshold_label = QLabel("Similarity Threshold:")
         threshold_label.setStyleSheet("font-size: 14px; font-weight: 500;")
         header_layout.addWidget(threshold_label, 2, 0)
@@ -119,6 +140,7 @@ class ApplicationView(QMainWindow):
         self.threshold_value_label = QLabel(f"{self.threshold_value:.2f}")
         header_layout.addWidget(self.threshold_value_label, 2, 2)
 
+        # Label and entry for the number of tests to run
         test_cases_label = QLabel("Number of Tests:")
         test_cases_label.setStyleSheet("font-size: 14px; font-weight: 500;")
         header_layout.addWidget(test_cases_label, 3, 0)
@@ -128,12 +150,14 @@ class ApplicationView(QMainWindow):
         self.test_cases_entry.setText("10")
         header_layout.addWidget(self.test_cases_entry, 3, 1)
 
+        # Progress bar to indicate ongoing analysis operations
         self.progress = QProgressBar()
         self.progress.setMinimum(0)
         self.progress.setMaximum(0)
         self.progress.setVisible(False)
         header_layout.addWidget(self.progress, 4, 0, 1, 4)
 
+        # Action buttons for starting analysis, resetting, and exporting report
         btn_start = QPushButton("Start Analysis")
         btn_start.clicked.connect(self.on_start_analysis)
         header_layout.addWidget(btn_start, 5, 0)
@@ -149,11 +173,14 @@ class ApplicationView(QMainWindow):
         layout.addWidget(header_widget)
 
     def apply_modern_style(self):
+        """
+        Apply a modern visual style using Fusion style, custom palette, and font settings.
+        """
         QApplication.setStyle(QStyleFactory.create("Fusion"))
 
-        # Modern grey palette with blue accent
+        # Define a modern grey palette with blue accent colors
         palette = QPalette()
-        palette.setColor(QPalette.Window, QColor("#e0e0e0"))    # Light grey background
+        palette.setColor(QPalette.Window, QColor("#e0e0e0"))  # Light grey background
         palette.setColor(QPalette.WindowText, QColor("#2e2e2e"))
         palette.setColor(QPalette.Base, QColor("#ffffff"))
         palette.setColor(QPalette.AlternateBase, QColor("#e0e0e0"))
@@ -172,7 +199,7 @@ class ApplicationView(QMainWindow):
         font = QFont("Segoe UI", 10)
         QApplication.instance().setFont(font)
 
-        # Update QPushButton style
+        # Customize the style for QPushButton elements
         for btn in self.findChildren(QPushButton):
             btn.setStyleSheet(
                 """
@@ -193,7 +220,7 @@ class ApplicationView(QMainWindow):
                 """
             )
 
-        # Update QLineEdit style
+        # Customize QLineEdit style for test cases input
         self.test_cases_entry.setStyleSheet(
             """
             QLineEdit {
@@ -209,7 +236,7 @@ class ApplicationView(QMainWindow):
             """
         )
 
-        # Update QSlider style
+        # Customize QSlider style for the similarity threshold control
         self.threshold_slider.setStyleSheet(
             """
             QSlider::groove:horizontal {
@@ -229,7 +256,7 @@ class ApplicationView(QMainWindow):
             """
         )
 
-        # Update QProgressBar style
+        # Customize QProgressBar style for visual consistency
         self.progress.setStyleSheet(
             """
             QProgressBar {
@@ -247,7 +274,7 @@ class ApplicationView(QMainWindow):
             """
         )
 
-        # Update QTabWidget style
+        # Customize QTabWidget style to match the modern design
         self.notebook.setStyleSheet(
             """
             QTabBar::tab {
@@ -273,11 +300,18 @@ class ApplicationView(QMainWindow):
         )
 
     def update_threshold_label(self, value):
-        # Convert slider value (50-100) back to a float (0.50-1.0)
+        """
+        Update the displayed similarity threshold label when the slider value changes.
+
+        The slider value is converted from an integer (50-100) to a float (0.50-1.0).
+        """
         threshold = value / 100.0
         self.threshold_value_label.setText(f"{threshold:.2f}")
 
     def browse_file(self):
+        """
+        Open a file dialog to allow the user to select a single Python file.
+        """
         file_name, _ = QFileDialog.getOpenFileName(
             self, "Select Python File", "", "Python Files (*.py)"
         )
@@ -287,6 +321,9 @@ class ApplicationView(QMainWindow):
             QMessageBox.information(self, "File Selected", f"Selected file: {file_name}")
 
     def browse_folder(self):
+        """
+        Open a folder dialog to allow the user to select a directory for analysis.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select Folder")
         if folder:
             self.folder_path = folder
@@ -294,13 +331,26 @@ class ApplicationView(QMainWindow):
             QMessageBox.information(self, "Folder Selected", f"Selected folder: {folder}")
 
     def on_start_analysis(self):
+        """
+        Validate inputs and initiate the code analysis process.
+
+        This method performs the following steps:
+          - Checks for selected file or folder.
+          - Validates the threshold and number of tests.
+          - Imports a single file if selected.
+          - Sets the project path for analysis.
+          - Displays the progress bar during analysis.
+          - Updates all analysis tabs with the results.
+        """
         if not (self.file_path or self.folder_path):
             QMessageBox.critical(self, "Error", "No file or folder selected!")
             return
 
         try:
+            # Convert slider value to a float threshold
             threshold = self.threshold_slider.value() / 100.0
 
+            # Validate the number of tests input
             num_tests_text = self.test_cases_entry.text().strip()
             if not num_tests_text.isdigit():
                 raise ValueError("Test cases input is not a valid positive integer.")
@@ -310,42 +360,31 @@ class ApplicationView(QMainWindow):
 
             analysis_path = self.file_path if self.file_path else self.folder_path
 
-            # If user picked a single file, we can import it
+            # If a single file is selected, dynamically import it for analysis
             if self.file_path:
                 import_user_script(self.file_path)
 
-            # Also set the project path for RopeRefactorEngine
+            # Set the project path based on the user's selection
             if self.folder_path:
                 self.controller.set_project_path(self.folder_path)
             elif self.file_path:
                 project_root = os.path.dirname(self.file_path)
                 self.controller.set_project_path(project_root)
 
-            # Show progress bar
+            # Display the progress bar while analysis is running
             self.progress.setVisible(True)
             QApplication.processEvents()
 
-            # Run analysis
+            # Execute analysis and store results
             results = self.controller.start_analysis(analysis_path, threshold, num_tests)
             self.analysis_results = results
 
-            # Update tabs
+            # Update individual tabs with corresponding analysis results
             self.static_tab.update_static(results.get("static", []))
             self.clone_tab.update_clone(results.get("merged_clones", []))
             self.runtime_tab.update_runtime(results.get("runtime", {}))
             self.dataflow_tab.update_dataflow(results.get("data_flow", {}))
-
-            insights = results.get("analysis_insights", {})
-            key_metrics = insights.get("key_metrics", {})
-            self.summary_tab.update_key_metrics(key_metrics)
-            self.summary_tab.show_top_complex_functions(insights.get("top_complex_functions", []))
-            self.summary_tab.show_slowest_functions(insights.get("slowest_functions", []))
-            self.summary_tab.show_duplicate_pairs(insights.get("top_duplicate_pairs", []))
-            self.summary_tab.show_refactoring_suggestions(insights.get("refactoring_suggestions", []))
-
-            # Update the RefactorTab with the structured plans
-            refactor_plans = results.get("refactoring_plans", [])
-            self.refactor_tab.update_refactor_plans(refactor_plans)
+            self.refactor_tab.update_refactor_plans(results.get("refactoring_plans", []))
 
         except ValueError as ve:
             QMessageBox.critical(self, "Input Error", str(ve))
@@ -355,29 +394,32 @@ class ApplicationView(QMainWindow):
             self.progress.setVisible(False)
 
     def on_restart(self):
-        """Reset application state to allow new analysis."""
+        """
+        Reset the application state to allow a new analysis session.
+
+        This includes clearing selected file/folder, resetting slider values,
+        and clearing data in all analysis tabs.
+        """
         self.file_path = None
         self.folder_path = None
         self.threshold_slider.setValue(80)
-        self.threshold_value_label.setText(f"{0.8:.2f}")
+        self.threshold_value_label.setText(f"{0.0:.2f}")
 
-        # Clear all tab data
+        # Clear all tabs' data
         self.static_tab.update_static([])
         self.clone_tab.update_clone([])
         self.runtime_tab.update_runtime({})
         self.dataflow_tab.update_dataflow({})
-        self.summary_tab.update_key_metrics({})
-        self.summary_tab.show_top_complex_functions([])
-        self.summary_tab.show_slowest_functions([])
-        self.summary_tab.show_duplicate_pairs([])
-        self.summary_tab.show_refactoring_suggestions([])
-
-        # If you really want to clear the RefactorTab, you can do:
         self.refactor_tab.update_refactor_plans([])
 
         QMessageBox.information(self, "Reset", "Application reset. Please select a new file/folder to analyze.")
 
     def export_report(self):
+        """
+        Export the analysis results into a CSV report.
+
+        The report includes sections for static analysis, clone similarity analysis, and runtime metrics.
+        """
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Save Report As", "", "CSV Files (*.csv)"
         )
@@ -388,33 +430,36 @@ class ApplicationView(QMainWindow):
             with open(file_path, mode="w", encoding="utf-8", newline="") as file:
                 writer = csv.writer(file)
 
-                # === Summary Metrics ===
-                writer.writerow(["=== Summary ==="])
-                if hasattr(self.summary_tab, 'summary_labels'):
-                    for key, lbl in self.summary_tab.summary_labels.items():
-                        writer.writerow([key, lbl.text().split(":")[-1].strip()])  # Extract numeric value
-
-                # === Static Analysis ===
-                writer.writerow([])
+                # Write static analysis details
                 writer.writerow(["=== Static Analysis ==="])
                 if hasattr(self.static_tab, 'static_tree'):
                     tree = self.static_tab.static_tree
                     headers = [tree.headerItem().text(col) for col in range(tree.columnCount())]
-                    writer.writerow(headers)  # Write column headers
-
+                    writer.writerow(headers)
                     for i in range(tree.topLevelItemCount()):
                         item = tree.topLevelItem(i)
                         row = [item.text(col) for col in range(tree.columnCount())]
                         writer.writerow(row)
 
-                # === Clone Similarity Analysis ===
+                # Write clone similarity analysis details
                 writer.writerow([])
                 writer.writerow(["=== Clone Similarity Analysis ==="])
                 if hasattr(self.clone_tab, 'clone_tree'):
                     tree = self.clone_tab.clone_tree
                     headers = [tree.headerItem().text(col) for col in range(tree.columnCount())]
-                    writer.writerow(headers)  # Write column headers
+                    writer.writerow(headers)
+                    for i in range(tree.topLevelItemCount()):
+                        item = tree.topLevelItem(i)
+                        row = [item.text(col) for col in range(tree.columnCount())]
+                        writer.writerow(row)
 
+                # Write runtime metrics summary
+                writer.writerow([])
+                writer.writerow(["=== Runtime Metrics ==="])
+                if hasattr(self.runtime_tab, 'runtime_tree_summary'):
+                    tree = self.runtime_tab.runtime_tree_summary
+                    headers = [tree.headerItem().text(col) for col in range(tree.columnCount())]
+                    writer.writerow(headers)
                     for i in range(tree.topLevelItemCount()):
                         item = tree.topLevelItem(i)
                         row = [item.text(col) for col in range(tree.columnCount())]
@@ -426,13 +471,21 @@ class ApplicationView(QMainWindow):
             QMessageBox.critical(self, "Export Error", str(e))
 
     def start(self):
+        """
+        Display the main application window.
+        """
         self.show()
 
 
 if __name__ == "__main__":
+    # Initialize the QApplication and set the Fusion style for modern look
     app = QApplication(sys.argv)
-    app.setStyle('Fusion')  # Use Fusion style for a modern look
+    app.setStyle('Fusion')
+
+    # Initialize the controller and the main application view
     controller = CodeAnalysisController()
     view = ApplicationView(controller)
     view.start()
+
+    # Start the event loop
     sys.exit(app.exec_())
