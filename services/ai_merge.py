@@ -1,15 +1,19 @@
 import google.generativeai as genai
 import logging
-
-# Set your Gemini API key
-GOOGLE_API_KEY = "AIzaSyC33ksJ5eUmR1Fe87Bv0wWF49WrO9bGtOw"
-genai.configure(api_key=GOOGLE_API_KEY)
+import os
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+api_key = os.environ.get("GOOGLE_API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
+else:
+    logger.warning("GOOGLE_API_KEY environment variable is not set.")
 
 def ai_merge_functions(func_a_code: str, func_b_code: str, new_func_name: str) -> str:
+    if not api_key:
+        raise EnvironmentError("GOOGLE_API_KEY environment variable is not set.")
     prompt = f"""
     Merge the following two Python functions into a single function named '{new_func_name}'.
     Ensure that the merged function keeps all behaviors intact and avoids redundancy.
