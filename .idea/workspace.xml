@@ -7,16 +7,21 @@
     <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-03-12">
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.coverage" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/clone_classification_results.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/data_flow_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/rope_refactor_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/rope_refactor_engine.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/runtime_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/runtime_checker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/static_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/utils/ast_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/utils/ast_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/file.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/ai_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/refactor/ai_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/analysis_services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/dataflow/data_flow_analyzer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/refactoring_planner.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/refactor/refactoring_planner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/rope_refactor_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/refactor/rope_refactor_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/runtime_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/runtime/runtime_checker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/static/static_analyzer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/token_based_det.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/static/token_based_det.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/utils/ast_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/static/ast_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/tabs_view.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,11 +98,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\tests" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\utils" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\model" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\file" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\controller" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\refactor" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\dataflow" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\runtime" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\static" />
     </key>
   </component>
   <component name="RunManager">
