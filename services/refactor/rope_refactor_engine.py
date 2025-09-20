@@ -6,9 +6,9 @@ from rope.base.project import Project
 from rope.refactor.extract import ExtractMethod
 
 # Import the AI-based merge function from our services.
-from services.ai_merge import ai_merge_functions
+from services.refactor.ai_merge import ai_merge_functions
 # Import the refactoring plan model used to describe changes.
-from services.refactoring_planner import RefactoringPlan
+from services.refactor.refactoring_planner import RefactoringPlan
 
 # Set up a logger for this module.
 logger = logging.getLogger(__name__)

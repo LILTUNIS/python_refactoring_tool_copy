@@ -1,11 +1,10 @@
 import ast
 import logging
-from dataclasses import dataclass
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any
 import math
 
 # Import the TSED ramp normalization function from the updated ast_utils
-from utils.ast_utils import ramp_tsed_distance
+from services.static.ast_utils import ramp_tsed_distance
 
 logging.basicConfig(level=logging.DEBUG)
 

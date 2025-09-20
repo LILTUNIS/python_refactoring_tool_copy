@@ -5,19 +5,19 @@ from typing import Any, Dict, List
 
 # Import services for various analysis aspects:
 # - Data flow analysis and function similarity comparisons.
-from services.data_flow_analyzer import analyze_data_flow, compare_function_similarity
+from services.dataflow.data_flow_analyzer import analyze_data_flow, compare_function_similarity
 # - Refactoring planner: to generate refactoring suggestions and structured plans.
-from services.refactoring_planner import RefactoringSug, RefactoringPlanner, RefactoringPlan
+from services.refactor.refactoring_planner import RefactoringSug, RefactoringPlanner, RefactoringPlan
 # - Token-based clone detection service.
-from services.token_based_det import TokenBasedCloneDetector
+from services.static.token_based_det import TokenBasedCloneDetector
 # - Analysis services for dynamic importing, static analysis, and runtime analysis.
-from services.analysis_services import (
+from controller.analysis_services import (
     DynamicImportService,
     StaticAnalysisService,
     RuntimeAnalysisService,
 )
 # NEW: Import the Rope refactoring engine for applying structured refactorings.
-from services.rope_refactor_engine import RopeRefactorEngine
+from services.refactor.rope_refactor_engine import RopeRefactorEngine
 
 # Configure logging to display time, level, and message.
 logging.basicConfig(

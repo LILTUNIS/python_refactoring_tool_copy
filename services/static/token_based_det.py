@@ -2,7 +2,7 @@ import tokenize
 import io
 import ast
 from typing import List, Tuple, Dict, Any
-from utils.ast_utils import normalized_ast_string  # Import the centralized normalization
+from services.static.ast_utils import normalized_ast_string  # Import the centralized normalization
 
 class TokenBasedCloneDetector:
     @staticmethod

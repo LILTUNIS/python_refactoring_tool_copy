@@ -4,30 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-03-12">
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.coverage" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.coverage" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/clone_classification_results.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/code_analysis_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/file.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/ai_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/refactor/ai_merge.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/analysis_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/controller/analysis_services.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/data_flow_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/dataflow/data_flow_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/refactoring_planner.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/refactor/refactoring_planner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/rope_refactor_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/refactor/rope_refactor_engine.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/runtime_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/runtime/runtime_checker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/static_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/static/static_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/services/token_based_det.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/static/token_based_det.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/utils/ast_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/services/static/ast_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python_refactoring_tool/view/main_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="6afb76c9-cda4-468b-af19-668c8dae0610" name="Changes" comment="new 2025-03-12" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ChangesViewManager" show_ignored="true" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -36,7 +19,8 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../python_refactoring_tool" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="SYNC" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -46,7 +30,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/LILTUNIS/python_refactoring_tool..git&quot;,
+    &quot;url&quot;: &quot;https://github.com/LILTUNIS/python_refactoring_tool_copy.git&quot;,
     &quot;accountId&quot;: &quot;9c341daa-7bf4-419b-9d72-efdabd01c73e&quot;
   }
 }</component>
@@ -91,18 +75,19 @@
     &quot;Python.visualization.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/yosri/PycharmProjects/python_refactoring_tool_copy&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;terminal&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.42769858&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\controller" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\refactor" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\dataflow" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\runtime" />
-      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool\services\static" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool_copy\services\static" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool_copy\services\runtime" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool_copy\services\dataflow" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool_copy\services\refactor" />
+      <recent name="C:\Users\yosri\PycharmProjects\python_refactoring_tool_copy\controller" />
     </key>
   </component>
   <component name="RunManager">
@@ -246,7 +231,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741796229255</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="new 2025-03-12">
+      <option name="closed" value="true" />
+      <created>1758373757265</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1758373757265</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -271,6 +264,9 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/../python_refactoring_tool" />
+    </ignored-roots>
     <MESSAGE value="new" />
     <MESSAGE value="new 2025-02-20" />
     <MESSAGE value="new 2025-02-22" />

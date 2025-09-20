@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # Import static analysis model and service.
 from model.static_model import static_model
-from services.static_analyzer import find_similar_nodes
+from services.static.static_analyzer import find_similar_nodes
 # Import runtime analysis service for dynamic performance checking.
-from services.runtime_checker import RuntimeAnalyzer
+from services.runtime.runtime_checker import RuntimeAnalyzer
 
 # Configure logging at INFO level.
 logging.basicConfig(level=logging.INFO)

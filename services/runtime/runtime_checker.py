@@ -16,7 +16,7 @@ import coverage  # Used for coverage-based instrumentation to record executed li
 # Import RuntimeMetrics from the runtime model to store performance metrics.
 from model.runtime_model import RuntimeMetrics
 # Import function to extract usage information for function arguments.
-from services.data_flow_analyzer import get_usage_info
+from services.dataflow.data_flow_analyzer import get_usage_info
 
 # Configure logging to include timestamps, log level, and messages.
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -455,7 +455,7 @@ def compute_runtime_similarity(metrics1: RuntimeMetrics, metrics2: RuntimeMetric
         # Extract branch execution frequency keys from the test results.
         if rm.test_results:
             first_key = next(iter(rm.test_results))
-            freq = rm.test_results[first_key].get("runtime", {}).get("branch_execution_frequency", {})
+            freq = rm.test_results[first_key].get("", {}).get("branch_execution_frequency", {})
             return set(freq.keys())
         return set()
 
